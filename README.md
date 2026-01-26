@@ -5,17 +5,21 @@ Cél: v0.1 stabil MVP.
 Feladat:
 1.	Hozz létre egy új modellt: planning.batch.
 2.	Mezők:
-•	name (Char, required, default: sequence vagy „Batch”)
-•	state (Selection: draft / confirmed, default draft)
+•	name (Char, required, default: sequence, 7 jegy paddinggel)
+•	status (Selection: draft / calculated / confirmed / done, default draft)
+•	date (Date, required)
+•	note (Text)
 •	create_date (system)
 3.	Hozz létre:
 •	tree view
 •	form view
 4.	Form view-ben:
-•	header state mező
+•	header statusbar (draft → calculated → confirmed → done)
 •	semmilyen automatizmus
 5.	Security:
-•	basic ir.model.access (admin full, user read/write)
+•	ir.model.access: admin full + backoffice csoport full
+•	backoffice csoport külön létrehozva (implied: base.group_user)
+•	jogosultság bővíthető későbbi role-okkal
 Korlátok:
 •	Community only
 •	Nincs integráció SO/MO/Stock felé
@@ -222,4 +226,3 @@ Definition of Done (v0.7):
 •	Újrafuttatás kontrollált (nincs csendes duplikáció).
 •	Az eredmény UI-ban áttekinthető.
 •	Hiányzó alapanyagokra jelzés/javaslat van.
-
