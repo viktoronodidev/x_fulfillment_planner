@@ -1,0 +1,8 @@
+<odoo>
+    <record id="seq_planning_batch" model="ir.sequence">
+        <field name="name">Planning Batch</field>
+        <field name="code">planning.batch</field>
+        <field name="padding">7</field>
+        <field name="number_increment">1</field>
+    </record>
+</odoo>

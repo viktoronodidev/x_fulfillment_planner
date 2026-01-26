@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_planning_batch_backoffice,planning.batch backoffice,model_planning_batch,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
+access_planning_batch_admin,planning.batch admin,model_planning_batch,base.group_system,1,1,1,1

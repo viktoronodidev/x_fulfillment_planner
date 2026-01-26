@@ -1,0 +1,43 @@
+<odoo>
+    <record id="view_planning_batch_tree" model="ir.ui.view">
+        <field name="name">planning.batch.tree</field>
+        <field name="model">planning.batch</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_planning_batch_form" model="ir.ui.view">
+        <field name="name">planning.batch.form</field>
+        <field name="model">planning.batch</field>
+        <field name="arch" type="xml">
+            <form string="Planning Batch">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,calculated,confirmed,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="date"/>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_planning_batch" model="ir.actions.act_window">
+        <field name="name">Planning Batches</field>
+        <field name="res_model">planning.batch</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_fulfillment_planner_root" name="Fulfillment Planner" sequence="10"/>
+    <menuitem id="menu_planning_batch" name="Planning Batches" parent="menu_fulfillment_planner_root" action="action_planning_batch" sequence="10"/>
+</odoo>
