@@ -2,7 +2,7 @@
     'name': 'Fulfillment Planner',
     'version': '17.0.0.1.0',
     'summary': 'Fulfillment planning control module',
-    'depends': ['base'],
+    'depends': ['base', 'sale', 'purchase', 'mrp', 'stock'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',

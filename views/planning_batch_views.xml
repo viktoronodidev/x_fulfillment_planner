@@ -27,6 +27,77 @@
                     <group>
                         <field name="note"/>
                     </group>
+                    <notebook>
+                        <page string="Workflow overview">
+                            <group>
+                                <field name="sale_order_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_order desc">
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="date_order"/>
+                                        <field name="state"/>
+                                        <field name="amount_total"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="sale_order_line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="order_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="price_subtotal"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="mrp_production_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_planned_start desc">
+                                        <field name="name"/>
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="date_planned_start"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="mo_line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="raw_material_production_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="purchase_order_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_order desc">
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="date_order"/>
+                                        <field name="state"/>
+                                        <field name="amount_total"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="purchase_order_line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="order_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="price_subtotal"/>
+                                        <field name="date_planned"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
