@@ -1,3 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_planning_batch_backoffice,planning.batch backoffice,model_planning_batch,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
 access_planning_batch_admin,planning.batch admin,model_planning_batch,base.group_system,1,1,1,1
+access_planning_batch_line_backoffice,planning.batch.line backoffice,model_planning_batch_line,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
+access_planning_batch_line_admin,planning.batch.line admin,model_planning_batch_line,base.group_system,1,1,1,1
+access_planning_batch_order_backoffice,planning.batch.order backoffice,model_planning_batch_order,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
+access_planning_batch_order_admin,planning.batch.order admin,model_planning_batch_order,base.group_system,1,1,1,1
+access_planning_batch_select_so_backoffice,planning.batch.select.so backoffice,model_planning_batch_select_so,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
+access_planning_batch_select_so_admin,planning.batch.select.so admin,model_planning_batch_select_so,base.group_system,1,1,1,1

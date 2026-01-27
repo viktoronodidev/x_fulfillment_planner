@@ -42,8 +42,11 @@ Feladat:
 •	új notebook page: „Workflow overview”
 2.	A page-en jeleníts meg (read-only listák):
 •	kapcsolt Sales Orderök (SO)
+•	kapcsolt Sales Order sorok (SO line)
 •	kapcsolt Manufacturing Orderök (MO)
-•	kapcsolt Deliveryk / Pickings (DO)
+•	kapcsolt Manufacturing Order sorok (MO line)
+•	kapcsolt Purchase Orderök (PO)
+•	kapcsolt Purchase Order sorok (PO line)
 3.	Technikai elv:
 •	csak read-only megjelenítés
 •	nincs core rekord módosítás
@@ -60,28 +63,33 @@ Minden döntési pontnál kérdezz, ha:
 •	melyik SO mező alapján kapcsolunk (pl. origin, custom mező, m2m)
 •	lista sorrend (dátum / prioritás / state)
 Definition of Done (v0.2):
-•	Batch formon egy oldalon látható SO/MO/DO.
+•	Batch formon egy oldalon látható SO/SO line/MO/MO line/PO/PO line.
 •	Minden lista read-only.
 •	Üres eset korrekt.
 •	Core adatok érintetlenek.
 ________________________________________
-Codex prompt – v0.3 (Sales Orderről indítható gyártás – manual trigger)
+Codex prompt – v0.3 (Batchből indítható gyártás – manual trigger)
 Prompt:
 Odoo 17 Community, x_fulfillment_planner.
 Ez a v0.3, v0.1–v0.2-re épül.
-Cél: Sales Orderről 1 gombbal MO indítás, kontrolláltan.
+Cél: Batchből 1 gombbal MO indítás, kontrolláltan.
 Feladat:
-1.	Adj hozzá egy gombot a Sales Order formhoz: „Create MO (Planner)”.
-2.	A gomb logikája:
-•	a kiválasztott SO alapján hozzon létre Manufacturing Order(öke)t
-•	minimum működő MO létrejöjjön, kézzel indítható gyártáshoz
+1.	Adj hozzá gombokat a Batch formhoz:
+•	„Calculate” – validálás és batch lineok képzése
+•	„Create MO (Planner)” – MO létrehozás aggregáltan
+2.	Selection:
+•	SO-k listázása (state = sale)
+•	SO line-ok kiválasztása (readable lista, kijelölés)
+3.	A gomb logikája:
+•	a kiválasztott SO line-ok alapján 1 MO termékenként (aggregált mennyiség)
+•	default BOM használata
 3.	Kapcsolás nyoma:
 •	legyen látható, hogy az SO-ból jött létre az MO (linkelés vagy hivatkozás)
 4.	Validációk:
-•	ha már létrejött MO az SO-hoz, ne duplikáljon (vagy kérdezzen / hibázzon)
+•	duplikáció kezelés: hibás sorok jelölése és kihagyása
 •	ha nem lehet MO-t létrehozni (pl. hiányzó product/BOM), adjon érthető hibát
 5.	UI:
-•	a gomb csak megfelelő állapotban látszódjon (ha indokolt)
+•	gombok state alapján: draft → calculate, calculated → create MO
 Korlátok:
 •	MVP: csak a legszükségesebb mezők az MO-n
 •	nincs teljes lánc automatizmus
@@ -93,7 +101,7 @@ Minden döntési pontnál kérdezz, ha:
 •	duplikáció kezelés: tiltás, vagy újragenerálás opció?
 •	a gomb SO-n legyen, vagy Batch-en belül?
 Definition of Done (v0.3):
-•	SO-ról gombnyomásra MO létrejön.
+•	Batchből gombnyomásra MO-k létrejönnek (termékenként).
 •	Duplikáció kontrollált.
 •	Hibaesetek érthető üzenetet adnak.
 •	UI gomb logikusan elérhető.
