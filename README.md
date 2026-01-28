@@ -1,4 +1,4 @@
-Current status (v0.4.2) – UI revamp in progress
+Current status (v0.4.21) – UI revamp in progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -12,7 +12,8 @@ Implemented in Odoo 17 Community:
   - Undo MOs on Manufacture (info popup when none)
   - Selection shows aggregated Selected Products list
 - Batch header buttons: Select Sales Orders, Analyze Shortage, Create MOs
-- Dashboard layout (KPI bar + two-column blocks: Selection, Batch Lines, Shortage, Manufacture)
+- Dashboard layout (full-width, collapsible sections)
+- Tabs restored: Selection → Shortage → Manufacture → Procurement
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
   - search by Order/Customer
