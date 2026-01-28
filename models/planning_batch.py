@@ -128,6 +128,11 @@ class PlanningBatch(models.Model):
         compute='_compute_has_mo',
         store=True,
     )
+    mo_count = fields.Integer(
+        string='MO Count',
+        compute='_compute_mo_count',
+        store=True,
+    )
 
     def action_open_select_sales_orders(self):
         self.ensure_one()
@@ -155,6 +160,11 @@ class PlanningBatch(models.Model):
     def _compute_has_mo(self):
         for batch in self:
             batch.has_mo = bool(batch.mrp_production_ids)
+
+    @api.depends('mrp_production_ids')
+    def _compute_mo_count(self):
+        for batch in self:
+            batch.mo_count = len(batch.mrp_production_ids)
 
     @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
@@ -252,7 +262,7 @@ class PlanningBatch(models.Model):
         existing_products = self.mrp_production_ids.mapped('product_id')
         duplicated = shortage_lines.mapped('product_id') & existing_products
         if duplicated:
-            raise UserError(_('Manufacturing orders already exist for selected products.'))
+            raise UserError(_('Manufacturing orders already exist for all selected products.'))
 
         products = shortage_lines.mapped('product_id')
         bom_map = self._get_bom_map(products)

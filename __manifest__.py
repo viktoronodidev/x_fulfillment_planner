@@ -1,6 +1,6 @@
 {
-    'name': 'Fulfillment Planner (v0.4.07)',
-    'version': '17.0.0.4.07',
+    'name': 'Fulfillment Planner (v0.4.08)',
+    'version': '17.0.0.4.08',
     'license': 'LGPL-3',
     'summary': 'Fulfillment planning control module',
     'depends': ['base', 'sale', 'purchase', 'mrp', 'stock'],

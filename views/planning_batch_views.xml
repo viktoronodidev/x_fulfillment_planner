@@ -27,7 +27,7 @@
                             modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', 'not in', ['draft', 'calculated'])]}"/>
                     <button name="action_undo_created_mo" type="object" string="Undo Created MOs"
                             class="btn-secondary"
-                            modifiers="{'invisible': [('has_mo', '=', False)]}"/>
+                            modifiers="{'invisible': [('mo_count', '=', 0)]}"/>
                     <button name="action_calculate" type="object" string="Calculate"
                             modifiers="{'invisible': [('status', '!=', 'draft')]}"/>
                     <button name="action_create_mo" type="object" string="Create MO (Planner)"
@@ -35,6 +35,7 @@
                 </header>
                 <sheet>
                     <field name="has_mo" invisible="1"/>
+                    <field name="mo_count" invisible="1"/>
                     <group>
                         <field name="name"/>
                         <field name="date"/>
