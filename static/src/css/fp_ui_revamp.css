@@ -95,8 +95,8 @@
 }
 
 .fp_section--selected-products {
-    background: #ecf9ee;
-    border-color: #b7e2c4;
+    background: #ffffff;
+    border-color: #e5e7eb;
 }
 
 .fp_badge {
@@ -115,6 +115,10 @@
 
 .fp_badge--sales {
     background: #6bd26b;
+}
+
+.fp_badge--products {
+    background: #c9f3d1;
 }
 
 .fp_badge--shortage {
@@ -143,10 +147,34 @@
 }
 
 .fp_selected_products_block {
-    background: #ecf9ee;
-    border: 1px solid #b7e2c4;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 12px;
+}
+
+.fp_form .o_form_sheet_bg {
+    max-width: none;
+}
+
+.fp_select_so .fp_select_section {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.fp_select_so .fp_select_section + .fp_select_section {
+    margin-top: 12px;
+}
+
+.fp_select_so .fp_section_title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.fp_select_so .fp_section_title--center {
+    text-align: center;
 }
 
 .fp_dashboard .o_list_view table {

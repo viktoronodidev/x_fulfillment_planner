@@ -15,7 +15,7 @@
         <field name="name">planning.batch.form</field>
         <field name="model">planning.batch</field>
         <field name="arch" type="xml">
-            <form string="Planning Batch">
+            <form string="Planning Batch" class="fp_form">
                 <header>
                     <field name="status" widget="statusbar" statusbar_visible="draft,calculated,confirmed,done"/>
                     <button name="action_open_select_sales_orders" type="object" string="Select Sales Orders"
@@ -131,7 +131,7 @@
                                 </details>
                                 <details class="fp_section fp_section--selected-products">
                                     <summary class="fp_section_summary">
-                                        <span class="fp_badge fp_badge--sales fp_badge--center">Selected Products</span>
+                                        <span class="fp_badge fp_badge--products fp_badge--center">Selected Products</span>
                                     </summary>
                                     <field name="product_summary_ids">
                                         <tree create="0" edit="0" delete="0">
@@ -433,12 +433,13 @@
         <field name="name">planning.batch.select.so.form</field>
         <field name="model">planning.batch.select.so</field>
         <field name="arch" type="xml">
-            <form string="Select Sales Orders">
-                <group>
+            <form string="Select Sales Orders" class="fp_select_so">
+                <group class="fp_select_so_search">
                     <field name="search_text" placeholder="Search by Order or Customer"/>
                     <button name="action_search" type="object" string="Search" class="btn-secondary"/>
                 </group>
-                <group>
+                <group class="fp_select_section">
+                    <div class="fp_section_title fp_section_title--center">Sales Orders</div>
                     <field name="line_ids">
                         <tree create="0" edit="0" delete="0" default_order="date_order desc">
                             <button name="action_select" type="object" string="Select" class="btn-secondary"/>
@@ -468,7 +469,8 @@
                         </form>
                     </field>
                 </group>
-                <group string="Selected Products" modifiers="{'invisible': [('has_product_summary', '=', False)]}">
+                <group class="fp_select_section fp_select_section--included" modifiers="{'invisible': [('has_product_summary', '=', False)]}">
+                    <div class="fp_section_title fp_section_title--center">Included Products</div>
                     <field name="product_line_ids">
                         <tree create="0" edit="0" delete="0">
                             <field name="product_id"/>
