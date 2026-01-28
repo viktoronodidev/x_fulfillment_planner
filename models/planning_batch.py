@@ -87,6 +87,17 @@ class PlanningBatch(models.Model):
         string='Purchase Order Lines',
         readonly=True,
     )
+    shortage_line_ids = fields.One2many(
+        comodel_name='planning.batch.shortage',
+        inverse_name='batch_id',
+        string='Shortage Lines',
+        readonly=True,
+    )
+    shortage_count = fields.Integer(
+        string='Shortage Count',
+        compute='_compute_shortage_count',
+        store=True,
+    )
 
     def action_open_select_sales_orders(self):
         self.ensure_one()
@@ -104,6 +115,93 @@ class PlanningBatch(models.Model):
                 'default_batch_id': self.id,
             },
         }
+
+    @api.depends('shortage_line_ids')
+    def _compute_shortage_count(self):
+        for batch in self:
+            batch.shortage_count = len(batch.shortage_line_ids)
+
+    def action_analyze_shortage(self):
+        self.ensure_one()
+        selected_lines = self.line_ids.filtered('selected')
+        if not selected_lines:
+            raise UserError(_('Please select at least one Sales Order Line.'))
+
+        self.shortage_line_ids.unlink()
+
+        demand_by_product = {}
+        line_ids_by_product = {}
+        for line in selected_lines:
+            product = line.product_id
+            if not product:
+                continue
+            demand_by_product[product] = demand_by_product.get(product, 0.0) + line.qty_product_uom
+            line_ids_by_product.setdefault(product, set()).add(line.sale_order_line_id.id)
+
+        products = list(demand_by_product.keys())
+        if not products:
+            return
+
+        mo_qty_by_product = {}
+        mo_domain = [
+            ('product_id', 'in', [p.id for p in products]),
+            ('company_id', '=', self.company_id.id),
+            ('state', 'in', ['confirmed', 'progress']),
+        ]
+        mos = self.env['mrp.production'].search(mo_domain)
+        for mo in mos:
+            product = mo.product_id
+            qty = mo.product_uom_id._compute_quantity(mo.product_qty, product.uom_id)
+            mo_qty_by_product[product] = mo_qty_by_product.get(product, 0.0) + qty
+
+        for product, demand_qty in demand_by_product.items():
+            on_hand = product.with_company(self.company_id).qty_available
+            available_qty = on_hand + mo_qty_by_product.get(product, 0.0)
+            shortage_qty = max(demand_qty - available_qty, 0.0)
+            self.env['planning.batch.shortage'].create({
+                'batch_id': self.id,
+                'product_id': product.id,
+                'uom_id': product.uom_id.id,
+                'demand_qty': demand_qty,
+                'available_qty': available_qty,
+                'shortage_qty': shortage_qty,
+                'source_type': 'so',
+                'related_line_ids': [(6, 0, list(line_ids_by_product.get(product, set())))],
+            })
+
+    def action_create_suggested_mo(self):
+        self.ensure_one()
+        shortage_lines = self.shortage_line_ids.filtered(lambda l: l.shortage_qty > 0)
+        if not shortage_lines:
+            raise UserError(_('No shortages to create Manufacturing Orders.'))
+
+        products = shortage_lines.mapped('product_id')
+        bom_map = self._get_bom_map(products)
+        missing = [p.display_name for p in products if not bom_map.get(p)]
+        if missing:
+            raise UserError(_('Missing BOM for: %s') % ', '.join(missing))
+
+        created_mos = self.env['mrp.production']
+        for line in shortage_lines:
+            product = line.product_id
+            bom = bom_map.get(product)
+            qty = line.shortage_qty
+            if qty <= 0 or not bom:
+                continue
+            mo_vals = {
+                'product_id': product.id,
+                'product_qty': qty,
+                'product_uom_id': product.uom_id.id,
+                'bom_id': bom.id,
+                'origin': self.name,
+            }
+            mo = self.env['mrp.production'].create(mo_vals)
+            created_mos |= mo
+
+        if created_mos:
+            self.mrp_production_ids = [(4, mo.id) for mo in created_mos]
+        else:
+            raise UserError(_('No Manufacturing Orders were created.'))
 
     def _get_bom_map(self, products):
         if not products:

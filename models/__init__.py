@@ -4,3 +4,4 @@ from . import planning_batch_order
 from . import planning_batch_select_so
 from . import planning_batch_select_so_line
 from . import planning_batch_select_so_product
+from . import planning_batch_shortage

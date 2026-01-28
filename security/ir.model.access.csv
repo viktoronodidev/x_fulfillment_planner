@@ -11,3 +11,5 @@ access_planning_batch_select_so_line_backoffice,planning.batch.select.so.line ba
 access_planning_batch_select_so_line_admin,planning.batch.select.so.line admin,model_planning_batch_select_so_line,base.group_system,1,1,1,1
 access_planning_batch_select_so_product_backoffice,planning.batch.select.so.product backoffice,model_planning_batch_select_so_product,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
 access_planning_batch_select_so_product_admin,planning.batch.select.so.product admin,model_planning_batch_select_so_product,base.group_system,1,1,1,1
+access_planning_batch_shortage_backoffice,planning.batch.shortage backoffice,model_planning_batch_shortage,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
+access_planning_batch_shortage_admin,planning.batch.shortage admin,model_planning_batch_shortage,base.group_system,1,1,1,1

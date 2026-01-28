@@ -1,7 +1,12 @@
-Current status (v0.3.03) – Finalized
+Current status (v0.4.01) – In progress
 Release date: 2026-01-28
-Next planned: v0.4 (open branch)
+Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
+- Shortage analysis (v0.4.01):
+  - planning.batch.shortage model (product-level shortage storage)
+  - Analyze Shortage button (on-hand + confirmed/in-progress MO supply)
+  - Shortage table with red/green status and drill-down to SO lines
+  - Create Suggested MOs (shortage qty only)
 - Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

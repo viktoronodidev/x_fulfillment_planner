@@ -1,6 +1,6 @@
 {
-    'name': 'Fulfillment Planner (v0.3.03)',
-    'version': '17.0.0.3.03',
+    'name': 'Fulfillment Planner (v0.4.01)',
+    'version': '17.0.0.4.01',
     'summary': 'Fulfillment planning control module',
     'depends': ['base', 'sale', 'purchase', 'mrp', 'stock'],
     'data': [
