@@ -240,6 +240,7 @@ class PlanningBatch(models.Model):
                     'type': 'ir.actions.act_window',
                     'res_model': 'planning.batch',
                     'view_mode': 'form',
+                    'views': [(False, 'form')],
                     'res_id': self.id,
                 },
             }
@@ -296,6 +297,7 @@ class PlanningBatch(models.Model):
                         'type': 'ir.actions.act_window',
                         'res_model': 'planning.batch',
                         'view_mode': 'form',
+                        'views': [(False, 'form')],
                         'res_id': self.id,
                     },
                 }
@@ -333,6 +335,7 @@ class PlanningBatch(models.Model):
                     'type': 'ir.actions.act_window',
                     'res_model': 'planning.batch',
                     'view_mode': 'form',
+                    'views': [(False, 'form')],
                     'res_id': self.id,
                 },
             }
