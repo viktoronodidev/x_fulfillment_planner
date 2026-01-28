@@ -26,7 +26,7 @@
                             class="btn-secondary"
                             modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', 'not in', ['draft', 'calculated'])]}"/>
                 </header>
-                <sheet>
+                <sheet class="fp_sheet fp_sheet--full">
                     <group>
                         <field name="name"/>
                         <field name="date"/>
