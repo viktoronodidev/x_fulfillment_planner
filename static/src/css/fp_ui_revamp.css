@@ -161,20 +161,26 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 12px;
+    width: 100%;
 }
 
 .fp_select_so .fp_select_section + .fp_select_section {
     margin-top: 12px;
 }
 
-.fp_select_so .fp_section_title {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
+.fp_select_so {
+    width: 100%;
 }
 
-.fp_select_so .fp_section_title--center {
-    text-align: center;
+.fp_select_so .o_form_sheet_bg {
+    max-width: none;
+    padding: 0;
+    width: 100%;
+}
+
+.fp_select_so .o_form_sheet {
+    max-width: none;
+    width: 100%;
 }
 
 .fp_dashboard .o_list_view table {
