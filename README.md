@@ -1,10 +1,11 @@
-Current status (v0.3.01)
+Current status (v0.3.03)
 Implemented in Odoo 17 Community:
 - Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
   - search by Order/Customer
   - select/deselect per row + Select All / Deselect All
+  - visual status icons (green filled / red outline)
   - SO rows read-only, row-open form shows SO number + SO lines (read-only)
   - Product Summary aggregates selected SO lines by product + UoM
   - Load Sales Orders links selected SOs and SO lines to the batch

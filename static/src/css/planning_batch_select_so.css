@@ -1,0 +1,23 @@
+.o_list_view .o_data_cell.fp_selection_status .o_badge {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    line-height: 1;
+    border: 2px solid transparent;
+}
+
+.o_list_view .o_data_cell.fp_selection_status .o_badge.text-bg-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.o_list_view .o_data_cell.fp_selection_status .o_badge.text-bg-danger {
+    background: transparent;
+    border-color: #dc3545;
+}
