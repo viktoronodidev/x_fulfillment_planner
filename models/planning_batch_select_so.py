@@ -38,6 +38,15 @@ class PlanningBatchSelectSO(models.TransientModel):
             'target': 'new',
         }
 
+    def _get_return_action(self):
+        self.ensure_one()
+        if self.env.context.get('fp_embedded'):
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'soft_reload',
+            }
+        return self._get_action()
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
@@ -112,19 +121,19 @@ class PlanningBatchSelectSO(models.TransientModel):
         self.ensure_one()
         self._reload_lines()
         self._refresh_summary()
-        return self._get_action()
+        return self._get_return_action()
 
     def action_select_all(self):
         self.ensure_one()
         self.line_ids.write({'selected': True})
         self._refresh_summary()
-        return self._get_action()
+        return self._get_return_action()
 
     def action_deselect_all(self):
         self.ensure_one()
         self.line_ids.write({'selected': False})
         self._refresh_summary()
-        return self._get_action()
+        return self._get_return_action()
 
     def action_apply(self):
         self.ensure_one()
@@ -161,4 +170,19 @@ class PlanningBatchSelectSO(models.TransientModel):
                     })
         batch.line_ids.filtered(lambda l: l.sale_order_id not in selected_orders).unlink()
 
+        if self.env.context.get('fp_embedded'):
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Sales Orders loaded'),
+                    'message': _('Batch updated with selected Sales Orders.'),
+                    'type': 'success',
+                    'sticky': False,
+                    'next': {
+                        'type': 'ir.actions.client',
+                        'tag': 'soft_reload',
+                    },
+                },
+            }
         return {'type': 'ir.actions.act_window_close'}

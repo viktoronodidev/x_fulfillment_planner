@@ -71,6 +71,11 @@ class PlanningBatchSelectSOLine(models.TransientModel):
         self.ensure_one()
         if not self.wizard_id:
             return {'type': 'ir.actions.act_window_close'}
+        if self.env.context.get('fp_embedded'):
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'soft_reload',
+            }
         return self.wizard_id._get_action()
 
     def action_select(self):

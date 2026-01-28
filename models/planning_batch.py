@@ -49,6 +49,12 @@ class PlanningBatch(models.Model):
         inverse_name='batch_id',
         string='Selected Sales Orders',
     )
+    select_so_wizard_id = fields.Many2one(
+        comodel_name='planning.batch.select.so',
+        string='Sales Order Selector',
+        compute='_compute_select_so_wizard_id',
+        store=False,
+    )
     line_ids = fields.One2many(
         comodel_name='planning.batch.line',
         inverse_name='batch_id',
@@ -203,6 +209,15 @@ class PlanningBatch(models.Model):
     def _compute_sales_order_count(self):
         for batch in self:
             batch.sales_order_count = len(batch.batch_order_ids)
+
+    def _compute_select_so_wizard_id(self):
+        for batch in self:
+            wizard = self.env['planning.batch.select.so'].search(
+                [('batch_id', '=', batch.id)], order='id desc', limit=1
+            )
+            if not wizard:
+                wizard = self.env['planning.batch.select.so'].create({'batch_id': batch.id})
+            batch.select_so_wizard_id = wizard
 
     @api.depends('line_ids.selected', 'line_ids.product_id')
     def _compute_product_count(self):
