@@ -71,8 +71,8 @@
                                     </div>
                                 </div>
                                 <details class="fp_section fp_section--selection" open="open">
-                                    <summary>
-                                        <span>Selection</span>
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--sales fp_badge--center">Sales Orders</span>
                                     </summary>
                                     <field name="batch_order_ids" options="{'no_create': True}">
                                         <tree create="0" edit="0" delete="1">
@@ -105,9 +105,9 @@
                                         </form>
                                     </field>
                                 </details>
-                                <details class="fp_section" open="open">
-                                    <summary>
-                                        <span>Selected Products</span>
+                                <details class="fp_section">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--sales fp_badge--center">Selected Products</span>
                                     </summary>
                                     <field name="product_summary_ids">
                                         <tree create="0" edit="0" delete="0">
@@ -117,10 +117,9 @@
                                         </tree>
                                     </field>
                                 </details>
-                                <details class="fp_section fp_section--shortage" open="open">
-                                    <summary>
-                                        <span>Shortage</span>
-                                        <span class="fp_badge">Shortage</span>
+                                <details class="fp_section fp_section--shortage">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--shortage fp_badge--center">Shortage</span>
                                     </summary>
                                     <div class="fp_block_meta">
                                         <field name="shortage_last_run" readonly="1"/>
@@ -160,9 +159,9 @@
                                         </form>
                                     </field>
                                 </details>
-                                <details class="fp_section" open="open">
-                                    <summary>
-                                        <span>Manufacture</span>
+                                <details class="fp_section">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--manufacture fp_badge--center">Manufacture</span>
                                     </summary>
                                     <div class="fp_section_actions">
                                         <button name="action_undo_created_mo" type="object" string="Undo MOs"
@@ -311,7 +310,8 @@
                         </page>
                         <page string="Procurement">
                             <group>
-                                <div class="o_form_label">Planned for v0.5+</div>
+                                <div class="fp_badge fp_badge--procurement fp_badge--center">Procurement</div>
+                                <div class="fp_muted">Planned for v0.5+</div>
                             </group>
                         </page>
                         <page string="Workflow overview">
