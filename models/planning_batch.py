@@ -126,7 +126,7 @@ class PlanningBatch(models.Model):
     has_mo = fields.Boolean(
         string='Has MOs',
         compute='_compute_has_mo',
-        store=True,
+        store=False,
     )
 
     def action_open_select_sales_orders(self):
@@ -236,6 +236,12 @@ class PlanningBatch(models.Model):
                 'message': _('Shortage table updated.'),
                 'type': 'success',
                 'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'planning.batch',
+                    'view_mode': 'form',
+                    'res_id': self.id,
+                },
             }
         }
 
@@ -286,6 +292,12 @@ class PlanningBatch(models.Model):
                     'message': _('Manufacturing Orders created for shortages.'),
                     'type': 'success',
                     'sticky': False,
+                    'next': {
+                        'type': 'ir.actions.act_window',
+                        'res_model': 'planning.batch',
+                        'view_mode': 'form',
+                        'res_id': self.id,
+                    },
                 }
             }
         else:
@@ -317,6 +329,12 @@ class PlanningBatch(models.Model):
                 'message': _('Draft Manufacturing Orders created by this batch were removed.'),
                 'type': 'warning',
                 'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'planning.batch',
+                    'view_mode': 'form',
+                    'res_id': self.id,
+                },
             }
         }
     def _get_bom_map(self, products):

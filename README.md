@@ -1,4 +1,4 @@
-Current status (v0.4.04) – In progress
+Current status (v0.4.05) – In progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -8,6 +8,7 @@ Implemented in Odoo 17 Community:
   - Shortage table with red/green status and drill-down to SO lines
   - Create Suggested MOs (shortage qty only)
   - Last run info (date + user) + completion notification
+  - Manufacture tab with MOs + MO lines + created at/by
   - Undo Created MOs (removes draft MOs created by batch) + created at/by
   - Selection tab shows aggregated Selected Products list
 - Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
