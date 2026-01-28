@@ -35,7 +35,20 @@ class PlanningBatchSelectSO(models.TransientModel):
             'res_model': 'planning.batch.select.so',
             'view_mode': 'form',
             'res_id': self.id,
-            'target': 'new',
+            'target': 'current',
+        }
+
+    def _get_return_batch_action(self):
+        self.ensure_one()
+        if not self.batch_id:
+            return {'type': 'ir.actions.act_window_close'}
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Planning Batch'),
+            'res_model': 'planning.batch',
+            'view_mode': 'form',
+            'res_id': self.batch_id.id,
+            'target': 'current',
         }
 
     @api.model_create_multi
@@ -161,4 +174,10 @@ class PlanningBatchSelectSO(models.TransientModel):
                     })
         batch.line_ids.filtered(lambda l: l.sale_order_id not in selected_orders).unlink()
 
+        if self.env.context.get('fp_fullscreen'):
+            return self._get_return_batch_action()
         return {'type': 'ir.actions.act_window_close'}
+
+    def action_back_to_batch(self):
+        self.ensure_one()
+        return self._get_return_batch_action()
