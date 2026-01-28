@@ -114,6 +114,20 @@ class PlanningBatch(models.Model):
         string='Shortage Analyzed By',
         readonly=True,
     )
+    suggested_mo_created_at = fields.Datetime(
+        string='Suggested MOs Created At',
+        readonly=True,
+    )
+    suggested_mo_created_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Suggested MOs Created By',
+        readonly=True,
+    )
+    has_mo = fields.Boolean(
+        string='Has MOs',
+        compute='_compute_has_mo',
+        store=True,
+    )
 
     def action_open_select_sales_orders(self):
         self.ensure_one()
@@ -136,6 +150,11 @@ class PlanningBatch(models.Model):
     def _compute_shortage_count(self):
         for batch in self:
             batch.shortage_count = len(batch.shortage_line_ids)
+
+    @api.depends('mrp_production_ids')
+    def _compute_has_mo(self):
+        for batch in self:
+            batch.has_mo = bool(batch.mrp_production_ids)
 
     @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
@@ -209,12 +228,28 @@ class PlanningBatch(models.Model):
             })
         self.shortage_last_run = fields.Datetime.now()
         self.shortage_last_run_by = self.env.user
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Shortage analysis completed'),
+                'message': _('Shortage table updated.'),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_create_suggested_mo(self):
         self.ensure_one()
         shortage_lines = self.shortage_line_ids.filtered(lambda l: l.shortage_qty > 0)
         if not shortage_lines:
             raise UserError(_('No shortages to create Manufacturing Orders.'))
+
+        existing_products = self.mrp_production_ids.mapped('product_id')
+        duplicated = shortage_lines.mapped('product_id') & existing_products
+        if duplicated:
+            names = ', '.join(duplicated.mapped('display_name'))
+            raise UserError(_('Manufacturing Order already exists for: %s') % names)
 
         products = shortage_lines.mapped('product_id')
         bom_map = self._get_bom_map(products)
@@ -241,6 +276,18 @@ class PlanningBatch(models.Model):
 
         if created_mos:
             self.mrp_production_ids = [(4, mo.id) for mo in created_mos]
+            self.suggested_mo_created_at = fields.Datetime.now()
+            self.suggested_mo_created_by = self.env.user
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Suggested MOs created'),
+                    'message': _('Manufacturing Orders created for shortages.'),
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
         else:
             raise UserError(_('No Manufacturing Orders were created.'))
 
@@ -260,6 +307,18 @@ class PlanningBatch(models.Model):
         })
         mos.unlink()
         self.mrp_production_ids = [(5, 0, 0)]
+        self.suggested_mo_created_at = False
+        self.suggested_mo_created_by = False
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Suggested MOs removed'),
+                'message': _('Draft Manufacturing Orders created by this batch were removed.'),
+                'type': 'warning',
+                'sticky': False,
+            }
+        }
     def _get_bom_map(self, products):
         if not products:
             return {}
