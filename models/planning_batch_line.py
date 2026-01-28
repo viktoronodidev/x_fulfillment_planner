@@ -11,6 +11,13 @@ class PlanningBatchLine(models.Model):
         required=True,
         ondelete='cascade',
     )
+    batch_order_id = fields.Many2one(
+        comodel_name='planning.batch.order',
+        string='Batch Order',
+        required=True,
+        ondelete='cascade',
+    )
+    selected = fields.Boolean(string='Select', default=True)
     sale_order_line_id = fields.Many2one(
         comodel_name='sale.order.line',
         string='Sales Order Line',
@@ -52,8 +59,6 @@ class PlanningBatchLine(models.Model):
             ('failed', 'Failed'),
         ],
         string='Status',
-        default='ok',
-        required=True,
     )
     message = fields.Char(string='Message')
     mrp_production_id = fields.Many2one(

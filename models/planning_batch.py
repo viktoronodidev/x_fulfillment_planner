@@ -44,14 +44,6 @@ class PlanningBatch(models.Model):
         string='Sales Orders',
         domain=[('state', '=', 'sale')],
     )
-    sale_order_line_ids = fields.Many2many(
-        comodel_name='sale.order.line',
-        relation='planning_batch_sale_order_line_rel',
-        column1='planning_batch_id',
-        column2='sale_order_line_id',
-        string='Sales Order Lines',
-        domain=[('order_id.state', '=', 'sale')],
-    )
     batch_order_ids = fields.One2many(
         comodel_name='planning.batch.order',
         inverse_name='batch_id',
@@ -106,42 +98,34 @@ class PlanningBatch(models.Model):
             'target': 'new',
             'context': {
                 'default_batch_id': self.id,
-                'default_sale_order_ids': [(6, 0, self.sale_order_ids.ids)],
             },
         }
 
-    def action_load_sale_lines(self):
-        self.ensure_one()
-        if not self.sale_order_ids:
-            raise UserError(_('Please select at least one Sales Order.'))
-        lines = self.env['sale.order.line'].search([
-            ('order_id', 'in', self.sale_order_ids.ids),
-            ('display_type', '=', False),
-        ])
-        self.sale_order_line_ids = [(6, 0, lines.ids)]
+    def _get_bom_map(self, products):
+        if not products:
+            return {}
+        bom_map = self.env['mrp.bom']._bom_find(
+            products,
+            company_id=self.company_id.id,
+        )
+        return bom_map
 
     def action_calculate(self):
         self.ensure_one()
-        if not self.sale_order_line_ids:
+        selected_lines = self.line_ids.filtered('selected')
+        if not selected_lines:
             raise UserError(_('Please select at least one Sales Order Line.'))
 
-        company_ids = self.sale_order_line_ids.mapped('order_id.company_id')
+        company_ids = selected_lines.mapped('sale_order_id.company_id')
         if len(company_ids) > 1:
             raise UserError(_('Please select Sales Order Lines from a single company.'))
 
-        # Reset existing batch lines
-        self.line_ids.unlink()
+        products = selected_lines.mapped('product_id')
+        bom_map = self._get_bom_map(products)
 
-        BatchLine = self.env['planning.batch.line']
-        for line in self.sale_order_line_ids:
-            BatchLine.create({
-                'batch_id': self.id,
-                'sale_order_line_id': line.id,
-                'status': 'ok',
-            })
-
-        # Validate products and BOM availability
-        for batch_line in self.line_ids:
+        for batch_line in selected_lines:
+            batch_line.status = 'ok'
+            batch_line.message = False
             product = batch_line.product_id
             if not product:
                 batch_line.status = 'failed'
@@ -151,10 +135,7 @@ class PlanningBatch(models.Model):
                 batch_line.status = 'failed'
                 batch_line.message = _('Product is not storable (type must be Storable Product).')
                 continue
-            bom = self.env['mrp.bom']._bom_find(
-                product=product,
-                company_id=batch_line.sale_order_id.company_id.id,
-            )
+            bom = bom_map.get(product)
             if not bom:
                 batch_line.status = 'failed'
                 batch_line.message = _('No Bill of Materials found for product.')
@@ -164,10 +145,11 @@ class PlanningBatch(models.Model):
 
     def action_create_mo(self):
         self.ensure_one()
-        if not self.line_ids:
-            raise UserError(_('Please run Calculate first.'))
+        selected_lines = self.line_ids.filtered('selected')
+        if not selected_lines:
+            raise UserError(_('Please select at least one Sales Order Line.'))
 
-        ok_lines = self.line_ids.filtered(lambda l: l.status == 'ok')
+        ok_lines = selected_lines.filtered(lambda l: l.status == 'ok')
         already_linked = ok_lines.filtered(lambda l: l.mrp_production_id)
         if already_linked:
             for line in already_linked:
@@ -177,7 +159,9 @@ class PlanningBatch(models.Model):
         if not ok_lines:
             raise UserError(_('No valid lines to create Manufacturing Orders.'))
 
-        # Aggregate quantities per product (in product UoM)
+        products = ok_lines.mapped('product_id')
+        bom_map = self._get_bom_map(products)
+
         qty_by_product = {}
         lines_by_product = {}
         for line in ok_lines:
@@ -192,10 +176,7 @@ class PlanningBatch(models.Model):
                     line.status = 'failed'
                     line.message = _('Quantity is zero after conversion.')
                 continue
-            bom = self.env['mrp.bom']._bom_find(
-                product=product,
-                company_id=self.company_id.id,
-            )
+            bom = bom_map.get(product)
             if not bom:
                 for line in lines_by_product.get(product, []):
                     line.status = 'failed'

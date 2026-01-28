@@ -1,16 +1,17 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
-class PlanningBatchOrder(models.Model):
-    _name = 'planning.batch.order'
-    _description = 'Planning Batch Order'
+class PlanningBatchSelectSOLine(models.TransientModel):
+    _name = 'planning.batch.select.so.line'
+    _description = 'Select Sales Orders Line'
 
-    batch_id = fields.Many2one(
-        comodel_name='planning.batch',
-        string='Batch',
-        required=True,
+    wizard_id = fields.Many2one(
+        comodel_name='planning.batch.select.so',
+        string='Wizard',
+        required=False,
         ondelete='cascade',
     )
+    selected = fields.Boolean(string='Select')
     sale_order_id = fields.Many2one(
         comodel_name='sale.order',
         string='Sales Order',
@@ -28,16 +29,16 @@ class PlanningBatchOrder(models.Model):
         string='Order Date',
         readonly=True,
     )
-    state = fields.Selection(
-        related='sale_order_id.state',
-        store=True,
-        string='Status',
-        readonly=True,
-    )
     amount_total = fields.Monetary(
         related='sale_order_id.amount_total',
         store=True,
         string='Total',
+        readonly=True,
+    )
+    state = fields.Selection(
+        related='sale_order_id.state',
+        store=True,
+        string='Status',
         readonly=True,
     )
     currency_id = fields.Many2one(
@@ -46,16 +47,14 @@ class PlanningBatchOrder(models.Model):
         string='Currency',
         readonly=True,
     )
-    batch_line_ids = fields.One2many(
-        comodel_name='planning.batch.line',
-        inverse_name='batch_order_id',
+    sale_order_line_ids = fields.One2many(
+        related='sale_order_id.order_line',
         string='Sales Order Lines',
+        readonly=True,
     )
 
-    def unlink(self):
-        batches = self.mapped('batch_id')
-        orders = self.mapped('sale_order_id')
-        res = super().unlink()
-        for batch in batches:
-            batch.sale_order_ids = [(3, so.id) for so in orders]
-        return res
+    @api.onchange('selected')
+    def _onchange_selected(self):
+        for line in self:
+            if line.wizard_id:
+                line.wizard_id._set_product_lines()
