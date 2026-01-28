@@ -180,6 +180,7 @@ class PlanningBatch(models.Model):
             'res_id': wizard.id,
             'context': {
                 'default_batch_id': self.id,
+                'dialog_size': 'large',
             },
         }
 

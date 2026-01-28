@@ -1,4 +1,4 @@
-Current status (v0.4.26) – UI revamp in progress
+Current status (v0.4.27) – UI revamp in progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:

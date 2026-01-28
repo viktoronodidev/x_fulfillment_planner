@@ -183,6 +183,25 @@
     width: 100%;
 }
 
+.fp_select_so .o_group {
+    width: 100%;
+}
+
+.fp_select_so .o_list_view,
+.fp_select_so .o_list_renderer,
+.fp_select_so .o_list_view .o_list_table {
+    width: 100%;
+}
+
+.fp_select_so .o_list_view .o_list_table {
+    table-layout: auto;
+}
+
+.modal-dialog.modal-lg {
+    max-width: 95vw;
+    width: 95vw;
+}
+
 .fp_dashboard .o_list_view table {
     table-layout: auto;
 }
