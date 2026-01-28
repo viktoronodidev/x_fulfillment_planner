@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import fields, models
 
 
 class PlanningBatchSelectSOLine(models.TransientModel):
@@ -8,14 +8,23 @@ class PlanningBatchSelectSOLine(models.TransientModel):
     wizard_id = fields.Many2one(
         comodel_name='planning.batch.select.so',
         string='Wizard',
-        required=False,
+        required=True,
         ondelete='cascade',
     )
-    selected = fields.Boolean(string='Select')
     sale_order_id = fields.Many2one(
         comodel_name='sale.order',
         string='Sales Order',
         required=True,
+    )
+    selected = fields.Boolean(string='Selected')
+    selection_state = fields.Selection(
+        [
+            ('selected', 'Selected'),
+            ('not_selected', 'Not selected'),
+        ],
+        string='Status',
+        compute='_compute_selection_state',
+        store=True,
     )
     partner_id = fields.Many2one(
         related='sale_order_id.partner_id',
@@ -53,8 +62,18 @@ class PlanningBatchSelectSOLine(models.TransientModel):
         readonly=True,
     )
 
-    def action_toggle_selected(self):
+    def _compute_selection_state(self):
         for line in self:
-            line.selected = not line.selected
+            line.selection_state = 'selected' if line.selected else 'not_selected'
+
+    def action_select(self):
+        for line in self:
+            line.selected = True
             if line.wizard_id:
-                line.wizard_id._set_product_lines()
+                line.wizard_id._refresh_summary()
+
+    def action_deselect(self):
+        for line in self:
+            line.selected = False
+            if line.wizard_id:
+                line.wizard_id._refresh_summary()

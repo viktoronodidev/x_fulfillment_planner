@@ -22,39 +22,24 @@ class PlanningBatchSelectSO(models.TransientModel):
         comodel_name='planning.batch.select.so.product',
         inverse_name='wizard_id',
         string='Product Summary',
-        compute='_compute_product_lines',
     )
     has_product_summary = fields.Boolean(
         string='Has Product Summary',
-        compute='_compute_product_lines',
+        compute='_compute_has_product_summary',
     )
 
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         for wizard in records:
-            if not wizard.line_ids:
-                wizard._reload_lines()
+            wizard._reload_lines()
+            wizard._refresh_summary()
         return records
 
-    @api.model
-    def default_get(self, fields_list):
-        res = super().default_get(fields_list)
-        batch_id = self.env.context.get('default_batch_id')
-        if not batch_id:
-            return res
-        batch = self.env['planning.batch'].browse(batch_id)
-        domain = [('state', '=', 'sale')]
-        if batch.company_id:
-            domain.append(('company_id', '=', batch.company_id.id))
-        orders = self.env['sale.order'].search(domain, order='date_order desc')
-        res['line_ids'] = [
-            (0, 0, {
-                'sale_order_id': order.id,
-                'selected': order.id in batch.sale_order_ids.ids,
-            }) for order in orders
-        ]
-        return res
+    @api.depends('product_line_ids')
+    def _compute_has_product_summary(self):
+        for wizard in self:
+            wizard.has_product_summary = bool(wizard.product_line_ids)
 
     def _get_domain(self):
         domain = [('state', '=', 'sale')]
@@ -68,28 +53,25 @@ class PlanningBatchSelectSO(models.TransientModel):
 
     def _reload_lines(self):
         self.ensure_one()
-        selected_ids = set(self.line_ids.filtered('selected').mapped('sale_order_id').ids)
         orders = self.env['sale.order'].search(self._get_domain(), order='date_order desc')
-        self.line_ids = [(5, 0, 0)]
-        self.line_ids = [
-            (0, 0, {
+        existing_by_so = {line.sale_order_id.id: line for line in self.line_ids}
+        keep_ids = set()
+        for order in orders:
+            if order.id in existing_by_so:
+                keep_ids.add(existing_by_so[order.id].id)
+                continue
+            self.env['planning.batch.select.so.line'].create({
+                'wizard_id': self.id,
                 'sale_order_id': order.id,
-                'selected': order.id in selected_ids,
-            }) for order in orders
-        ]
+                'selected': order.id in self.batch_id.sale_order_ids.ids,
+            })
+        self.line_ids.filtered(lambda l: l.id not in keep_ids and l.sale_order_id not in orders).unlink()
 
-    @api.depends('line_ids', 'line_ids.selected', 'line_ids.sale_order_id')
-    def _compute_product_lines(self):
-        for wizard in self:
-            wizard._set_product_lines()
-            wizard.has_product_summary = bool(wizard.product_line_ids)
-
-    def _set_product_lines(self):
+    def _refresh_summary(self):
         self.ensure_one()
-        self.product_line_ids = [(5, 0, 0)]
+        self.product_line_ids.unlink()
         selected_orders = self.line_ids.filtered('selected').mapped('sale_order_id')
         if not selected_orders:
-            self.has_product_summary = False
             return
         order_lines = self.env['sale.order.line'].search([
             ('order_id', 'in', selected_orders.ids),
@@ -101,20 +83,21 @@ class PlanningBatchSelectSO(models.TransientModel):
             if not product:
                 continue
             qty_by_product.setdefault(product, 0.0)
-            qty_by_product[product] += line.product_uom_qty
-        self.product_line_ids = [
-            (0, 0, {
+            qty_by_product[product] += line.product_uom._compute_quantity(
+                line.product_uom_qty, product.uom_id
+            )
+        for product, qty in qty_by_product.items():
+            self.env['planning.batch.select.so.product'].create({
+                'wizard_id': self.id,
                 'product_id': product.id,
                 'product_uom_id': product.uom_id.id,
                 'qty': qty,
-            }) for product, qty in qty_by_product.items()
-        ]
-        self.has_product_summary = bool(self.product_line_ids)
+            })
 
     def action_search(self):
         self.ensure_one()
         self._reload_lines()
-        self._set_product_lines()
+        self._refresh_summary()
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'planning.batch.select.so',
@@ -125,22 +108,15 @@ class PlanningBatchSelectSO(models.TransientModel):
 
     def action_select_all(self):
         self.ensure_one()
-        for line in self.line_ids:
-            line.selected = True
-        self._set_product_lines()
+        self.line_ids.write({'selected': True})
+        self._refresh_summary()
         return self.action_search()
 
     def action_deselect_all(self):
         self.ensure_one()
-        for line in self.line_ids:
-            line.selected = False
-        self._set_product_lines()
+        self.line_ids.write({'selected': False})
+        self._refresh_summary()
         return self.action_search()
-
-    @api.onchange('line_ids', 'line_ids.selected')
-    def _onchange_line_ids_selected(self):
-        for wizard in self:
-            wizard._set_product_lines()
 
     def action_apply(self):
         self.ensure_one()
@@ -151,7 +127,6 @@ class PlanningBatchSelectSO(models.TransientModel):
         batch = self.batch_id
         batch.sale_order_ids = [(6, 0, selected_orders.ids)]
 
-        # Sync batch orders
         existing_orders = set(batch.batch_order_ids.mapped('sale_order_id').ids)
         for order in selected_orders:
             if order.id not in existing_orders:
@@ -161,7 +136,6 @@ class PlanningBatchSelectSO(models.TransientModel):
                 })
         batch.batch_order_ids.filtered(lambda o: o.sale_order_id not in selected_orders).unlink()
 
-        # Sync batch lines for selected orders
         existing_lines = {line.sale_order_line_id.id: line for line in batch.line_ids}
         order_lines = self.env['sale.order.line'].search([
             ('order_id', 'in', selected_orders.ids),
@@ -177,7 +151,6 @@ class PlanningBatchSelectSO(models.TransientModel):
                         'sale_order_line_id': line.id,
                         'selected': True,
                     })
-        # Remove batch lines for removed orders
         batch.line_ids.filtered(lambda l: l.sale_order_id not in selected_orders).unlink()
 
         return {'type': 'ir.actions.act_window_close'}
