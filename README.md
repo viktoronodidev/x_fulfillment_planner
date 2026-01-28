@@ -1,4 +1,4 @@
-Current status (v0.4.06) – In progress
+Current status (v0.4.07) – In progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:

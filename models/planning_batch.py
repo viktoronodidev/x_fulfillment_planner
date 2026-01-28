@@ -126,7 +126,7 @@ class PlanningBatch(models.Model):
     has_mo = fields.Boolean(
         string='Has MOs',
         compute='_compute_has_mo',
-        store=False,
+        store=True,
     )
 
     def action_open_select_sales_orders(self):
@@ -237,11 +237,8 @@ class PlanningBatch(models.Model):
                 'type': 'success',
                 'sticky': False,
                 'next': {
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'planning.batch',
-                    'view_mode': 'form',
-                    'views': [(False, 'form')],
-                    'res_id': self.id,
+                    'type': 'ir.actions.client',
+                    'tag': 'soft_reload',
                 },
             }
         }
@@ -255,8 +252,7 @@ class PlanningBatch(models.Model):
         existing_products = self.mrp_production_ids.mapped('product_id')
         duplicated = shortage_lines.mapped('product_id') & existing_products
         if duplicated:
-            names = ', '.join(duplicated.mapped('display_name'))
-            raise UserError(_('Manufacturing Order already exists for: %s') % names)
+            raise UserError(_('Manufacturing orders already exist for selected products.'))
 
         products = shortage_lines.mapped('product_id')
         bom_map = self._get_bom_map(products)
@@ -294,11 +290,8 @@ class PlanningBatch(models.Model):
                     'type': 'success',
                     'sticky': False,
                     'next': {
-                        'type': 'ir.actions.act_window',
-                        'res_model': 'planning.batch',
-                        'view_mode': 'form',
-                        'views': [(False, 'form')],
-                        'res_id': self.id,
+                        'type': 'ir.actions.client',
+                        'tag': 'soft_reload',
                     },
                 }
             }
@@ -332,11 +325,8 @@ class PlanningBatch(models.Model):
                 'type': 'warning',
                 'sticky': False,
                 'next': {
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'planning.batch',
-                    'view_mode': 'form',
-                    'views': [(False, 'form')],
-                    'res_id': self.id,
+                    'type': 'ir.actions.client',
+                    'tag': 'soft_reload',
                 },
             }
         }
