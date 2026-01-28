@@ -177,7 +177,7 @@
                 </group>
                 <group>
                     <field name="line_ids">
-                        <tree create="0" edit="1" delete="0" default_order="date_order desc">
+                        <tree create="0" edit="1" delete="0" editable="top" default_order="date_order desc">
                             <field name="selected" widget="boolean_toggle" options="{'clickable': True}"/>
                             <field name="sale_order_id" readonly="1" options="{'no_open': True}"/>
                             <field name="partner_id" readonly="1"/>
