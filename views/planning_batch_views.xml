@@ -25,17 +25,12 @@
                     <button name="action_create_suggested_mo" type="object" string="Create Suggested MOs"
                             class="btn-secondary"
                             modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', 'not in', ['draft', 'calculated'])]}"/>
-                    <button name="action_undo_created_mo" type="object" string="Undo Created MOs"
-                            class="btn-secondary"
-                            modifiers="{'invisible': [('mo_count', '=', 0)]}"/>
                     <button name="action_calculate" type="object" string="Calculate"
                             modifiers="{'invisible': [('status', '!=', 'draft')]}"/>
                     <button name="action_create_mo" type="object" string="Create MO (Planner)"
                             modifiers="{'invisible': [('status', '!=', 'calculated')]}"/>
                 </header>
                 <sheet>
-                    <field name="has_mo" invisible="1"/>
-                    <field name="mo_count" invisible="1"/>
                     <group>
                         <field name="name"/>
                         <field name="date"/>
@@ -143,6 +138,10 @@
                             </field>
                         </page>
                         <page string="Manufacture">
+                            <group>
+                                <button name="action_undo_created_mo" type="object" string="Undo Created MOs"
+                                        class="btn-secondary"/>
+                            </group>
                             <group>
                                 <field name="suggested_mo_created_at" readonly="1"/>
                                 <field name="suggested_mo_created_by" readonly="1"/>

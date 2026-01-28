@@ -123,16 +123,6 @@ class PlanningBatch(models.Model):
         string='Suggested MOs Created By',
         readonly=True,
     )
-    has_mo = fields.Boolean(
-        string='Has MOs',
-        compute='_compute_has_mo',
-        store=True,
-    )
-    mo_count = fields.Integer(
-        string='MO Count',
-        compute='_compute_mo_count',
-        store=True,
-    )
 
     def action_open_select_sales_orders(self):
         self.ensure_one()
@@ -155,16 +145,6 @@ class PlanningBatch(models.Model):
     def _compute_shortage_count(self):
         for batch in self:
             batch.shortage_count = len(batch.shortage_line_ids)
-
-    @api.depends('mrp_production_ids')
-    def _compute_has_mo(self):
-        for batch in self:
-            batch.has_mo = bool(batch.mrp_production_ids)
-
-    @api.depends('mrp_production_ids')
-    def _compute_mo_count(self):
-        for batch in self:
-            batch.mo_count = len(batch.mrp_production_ids)
 
     @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
@@ -312,7 +292,16 @@ class PlanningBatch(models.Model):
         self.ensure_one()
         mos = self.mrp_production_ids
         if not mos:
-            return
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('No Manufacturing Orders'),
+                    'message': _('There are no draft MOs to remove.'),
+                    'type': 'info',
+                    'sticky': False,
+                }
+            }
         non_draft = mos.filtered(lambda mo: mo.state != 'draft')
         if non_draft:
             raise UserError(_('Only draft Manufacturing Orders can be removed.'))

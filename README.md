@@ -1,4 +1,4 @@
-Current status (v0.4.08) – In progress
+Current status (v0.4.09) – In progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -9,7 +9,7 @@ Implemented in Odoo 17 Community:
   - Create Suggested MOs (shortage qty only)
   - Last run info (date + user) + completion notification
   - Manufacture tab with MOs + MO lines + created at/by
-  - Undo Created MOs (removes draft MOs created by batch) + created at/by
+  - Undo Created MOs moved to Manufacture tab (info popup when none)
   - Selection tab shows aggregated Selected Products list
 - Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
 - Select Sales Orders wizard (modal):
