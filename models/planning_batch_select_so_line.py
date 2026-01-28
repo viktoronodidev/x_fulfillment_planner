@@ -53,8 +53,8 @@ class PlanningBatchSelectSOLine(models.TransientModel):
         readonly=True,
     )
 
-    @api.onchange('selected')
-    def _onchange_selected(self):
+    def action_toggle_selected(self):
         for line in self:
+            line.selected = not line.selected
             if line.wizard_id:
                 line.wizard_id._set_product_lines()
