@@ -100,9 +100,26 @@ class PlanningBatch(models.Model):
         compute='_compute_product_summary_ids',
         store=True,
     )
+    bom_missing_ids = fields.One2many(
+        comodel_name='planning.batch.bom_issue',
+        inverse_name='batch_id',
+        string='Products without BOM',
+        compute='_compute_bom_missing_ids',
+        store=True,
+    )
     sales_order_count = fields.Integer(
         string='Sales Orders Included',
         compute='_compute_sales_order_count',
+        store=True,
+    )
+    product_count = fields.Integer(
+        string='Products Included',
+        compute='_compute_product_count',
+        store=True,
+    )
+    bom_missing_count = fields.Integer(
+        string='Products without BOM',
+        compute='_compute_bom_missing_ids',
         store=True,
     )
     shortage_count = fields.Integer(
@@ -113,6 +130,16 @@ class PlanningBatch(models.Model):
     shortage_qty_total = fields.Float(
         string='Total Shortage Qty',
         compute='_compute_shortage_qty_total',
+        store=True,
+    )
+    uncovered_demand_qty = fields.Float(
+        string='Uncovered Demand Qty',
+        compute='_compute_coverage_metrics',
+        store=True,
+    )
+    mo_coverage_pct = fields.Float(
+        string='MO Coverage %',
+        compute='_compute_coverage_metrics',
         store=True,
     )
     mo_created_count = fields.Integer(
@@ -175,6 +202,41 @@ class PlanningBatch(models.Model):
     def _compute_sales_order_count(self):
         for batch in self:
             batch.sales_order_count = len(batch.batch_order_ids)
+
+    @api.depends('line_ids.selected', 'line_ids.product_id')
+    def _compute_product_count(self):
+        for batch in self:
+            products = batch.line_ids.filtered('selected').mapped('product_id')
+            batch.product_count = len(products)
+
+    @api.depends('line_ids.selected', 'line_ids.product_id')
+    def _compute_bom_missing_ids(self):
+        for batch in self:
+            selected_products = batch.line_ids.filtered('selected').mapped('product_id')
+            values = [(5, 0, 0)]
+            missing = []
+            if selected_products:
+                bom_map = batch._get_bom_map(selected_products)
+                missing = [p for p in selected_products if not bom_map.get(p)]
+                for product in missing:
+                    values.append((0, 0, {
+                        'product_id': product.id,
+                        'uom_id': product.uom_id.id,
+                    }))
+            batch.bom_missing_ids = values
+            batch.bom_missing_count = len(missing)
+
+    @api.depends('line_ids.selected', 'line_ids.qty_product_uom', 'shortage_line_ids.shortage_qty')
+    def _compute_coverage_metrics(self):
+        for batch in self:
+            selected_lines = batch.line_ids.filtered('selected')
+            demand_total = sum(selected_lines.mapped('qty_product_uom'))
+            shortage_total = sum(batch.shortage_line_ids.mapped('shortage_qty'))
+            batch.uncovered_demand_qty = shortage_total
+            if demand_total:
+                batch.mo_coverage_pct = (max(demand_total - shortage_total, 0.0) / demand_total) * 100.0
+            else:
+                batch.mo_coverage_pct = 0.0
 
     @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):

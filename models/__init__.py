@@ -6,3 +6,4 @@ from . import planning_batch_select_so_line
 from . import planning_batch_select_so_product
 from . import planning_batch_shortage
 from . import planning_batch_product_summary
+from . import planning_batch_bom_issue

@@ -46,15 +46,39 @@
                                         </div>
                                     </div>
                                     <div class="fp_kpi_card">
-                                        <div class="fp_kpi_label">Shortage Qty</div>
+                                        <div class="fp_kpi_label">Products Included</div>
                                         <div class="fp_kpi_value">
-                                            <field name="shortage_qty_total" nolabel="1"/>
+                                            <field name="product_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Products without BOM</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="bom_missing_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">MO Coverage %</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="mo_coverage_pct" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Uncovered Demand Qty</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="uncovered_demand_qty" nolabel="1"/>
                                         </div>
                                     </div>
                                     <div class="fp_kpi_card">
                                         <div class="fp_kpi_label">Shortage Count</div>
                                         <div class="fp_kpi_value">
                                             <field name="shortage_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Shortage Qty</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="shortage_qty_total" nolabel="1"/>
                                         </div>
                                     </div>
                                     <div class="fp_kpi_card">
@@ -105,7 +129,7 @@
                                         </form>
                                     </field>
                                 </details>
-                                <details class="fp_section">
+                                <details class="fp_section fp_section--selected-products">
                                     <summary class="fp_section_summary">
                                         <span class="fp_badge fp_badge--sales fp_badge--center">Selected Products</span>
                                     </summary>
@@ -226,11 +250,19 @@
                                     </form>
                                 </field>
                             </group>
-                            <group string="Selected Products">
+                            <group string="Selected Products" class="fp_selected_products_block">
                                 <field name="product_summary_ids">
                                     <tree create="0" edit="0" delete="0">
                                         <field name="product_id"/>
                                         <field name="qty"/>
+                                        <field name="uom_id"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Need BoM correction">
+                                <field name="bom_missing_ids">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="product_id"/>
                                         <field name="uom_id"/>
                                     </tree>
                                 </field>

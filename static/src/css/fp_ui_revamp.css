@@ -6,7 +6,7 @@
 
 .fp_kpi_bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 12px;
 }
 
@@ -94,6 +94,11 @@
     box-shadow: 0 0 0 2px #f2c94c;
 }
 
+.fp_section--selected-products {
+    background: #ecf9ee;
+    border-color: #b7e2c4;
+}
+
 .fp_badge {
     background: #f2c94c;
     border: 1px solid #111111;
@@ -131,8 +136,17 @@
 }
 
 .fp_sheet--full {
-    max-width: 100%;
+    max-width: none;
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.fp_selected_products_block {
+    background: #ecf9ee;
+    border: 1px solid #b7e2c4;
+    border-radius: 12px;
+    padding: 12px;
 }
 
 .fp_dashboard .o_list_view table {
