@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class PlanningBatchSelectSOLine(models.TransientModel):
@@ -62,18 +62,27 @@ class PlanningBatchSelectSOLine(models.TransientModel):
         readonly=True,
     )
 
+    @api.depends('selected')
     def _compute_selection_state(self):
         for line in self:
             line.selection_state = 'selected' if line.selected else 'not_selected'
 
+    def _return_wizard_action(self):
+        self.ensure_one()
+        if not self.wizard_id:
+            return {'type': 'ir.actions.act_window_close'}
+        return self.wizard_id._get_action()
+
     def action_select(self):
-        for line in self:
-            line.selected = True
-            if line.wizard_id:
-                line.wizard_id._refresh_summary()
+        self.ensure_one()
+        self.selected = True
+        if self.wizard_id:
+            self.wizard_id._refresh_summary()
+        return self._return_wizard_action()
 
     def action_deselect(self):
-        for line in self:
-            line.selected = False
-            if line.wizard_id:
-                line.wizard_id._refresh_summary()
+        self.ensure_one()
+        self.selected = False
+        if self.wizard_id:
+            self.wizard_id._refresh_summary()
+        return self._return_wizard_action()

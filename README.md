@@ -1,3 +1,17 @@
+Current status (v0.3.01)
+Implemented in Odoo 17 Community:
+- Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
+- Select Sales Orders wizard (modal):
+  - auto-loads open SOs (state = sale) on open
+  - search by Order/Customer
+  - select/deselect per row + Select All / Deselect All
+  - SO rows read-only, row-open form shows SO number + SO lines (read-only)
+  - Product Summary aggregates selected SO lines by product + UoM
+  - Load Sales Orders links selected SOs and SO lines to the batch
+- Calculate = validation only (sets status/message on batch lines, moves batch to Calculated)
+- Create MO = persistence (aggregated MO per product, default BOM, links MO to batch lines)
+- Company filter applied when multi-company is active
+
 Codex prompt – v0.1 (Planning Batch alap)
 Prompt:
 Odoo 17 Community modult fejlesztesz az x_fulfillment_planner addonban.
@@ -78,8 +92,8 @@ Feladat:
 •	„Calculate” – validálás és batch lineok képzése
 •	„Create MO (Planner)” – MO létrehozás aggregáltan
 2.	Selection:
-•	SO-k listázása (state = sale)
-•	SO line-ok kiválasztása (readable lista, kijelölés)
+•	SO-k listázása (state = sale) egy modal wizardban
+•	SO line-ok kijelölése SO-n belül, read-only megjelenítéssel
 3.	A gomb logikája:
 •	a kiválasztott SO line-ok alapján 1 MO termékenként (aggregált mennyiség)
 •	default BOM használata

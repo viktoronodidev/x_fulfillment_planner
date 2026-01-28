@@ -90,12 +90,16 @@ class PlanningBatch(models.Model):
 
     def action_open_select_sales_orders(self):
         self.ensure_one()
+        wizard = self.env['planning.batch.select.so'].create({
+            'batch_id': self.id,
+        })
         return {
             'type': 'ir.actions.act_window',
             'name': _('Select Sales Orders'),
             'res_model': 'planning.batch.select.so',
             'view_mode': 'form',
             'target': 'new',
+            'res_id': wizard.id,
             'context': {
                 'default_batch_id': self.id,
             },

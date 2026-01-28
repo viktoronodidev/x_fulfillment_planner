@@ -28,6 +28,16 @@ class PlanningBatchSelectSO(models.TransientModel):
         compute='_compute_has_product_summary',
     )
 
+    def _get_action(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'planning.batch.select.so',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+        }
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
@@ -70,7 +80,11 @@ class PlanningBatchSelectSO(models.TransientModel):
     def _refresh_summary(self):
         self.ensure_one()
         self.product_line_ids.unlink()
-        selected_orders = self.line_ids.filtered('selected').mapped('sale_order_id')
+        selected_lines = self.env['planning.batch.select.so.line'].search([
+            ('wizard_id', '=', self.id),
+            ('selected', '=', True),
+        ])
+        selected_orders = selected_lines.mapped('sale_order_id')
         if not selected_orders:
             return
         order_lines = self.env['sale.order.line'].search([
@@ -98,25 +112,19 @@ class PlanningBatchSelectSO(models.TransientModel):
         self.ensure_one()
         self._reload_lines()
         self._refresh_summary()
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'planning.batch.select.so',
-            'view_mode': 'form',
-            'res_id': self.id,
-            'target': 'new',
-        }
+        return self._get_action()
 
     def action_select_all(self):
         self.ensure_one()
         self.line_ids.write({'selected': True})
         self._refresh_summary()
-        return self.action_search()
+        return self._get_action()
 
     def action_deselect_all(self):
         self.ensure_one()
         self.line_ids.write({'selected': False})
         self._refresh_summary()
-        return self.action_search()
+        return self._get_action()
 
     def action_apply(self):
         self.ensure_one()
