@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class PlanningBatchLine(models.Model):
@@ -67,6 +67,7 @@ class PlanningBatchLine(models.Model):
         readonly=True,
     )
 
+    @api.depends('product_uom_qty', 'product_uom', 'product_id')
     def _compute_qty_product_uom(self):
         for line in self:
             product = line.product_id

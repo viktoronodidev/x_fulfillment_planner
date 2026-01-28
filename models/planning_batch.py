@@ -132,11 +132,15 @@ class PlanningBatch(models.Model):
         demand_by_product = {}
         line_ids_by_product = {}
         for line in selected_lines:
-            product = line.product_id
+            so_line = line.sale_order_line_id
+            product = so_line.product_id
             if not product:
                 continue
-            demand_by_product[product] = demand_by_product.get(product, 0.0) + line.qty_product_uom
-            line_ids_by_product.setdefault(product, set()).add(line.sale_order_line_id.id)
+            qty = so_line.product_uom._compute_quantity(
+                so_line.product_uom_qty, product.uom_id
+            )
+            demand_by_product[product] = demand_by_product.get(product, 0.0) + qty
+            line_ids_by_product.setdefault(product, set()).add(so_line.id)
 
         products = list(demand_by_product.keys())
         if not products:
