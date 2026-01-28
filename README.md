@@ -1,4 +1,6 @@
-Current status (v0.3.03)
+Current status (v0.3.03) – Finalized
+Release date: 2026-01-28
+Next planned: v0.4 (open branch)
 Implemented in Odoo 17 Community:
 - Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
 - Select Sales Orders wizard (modal):
