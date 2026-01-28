@@ -25,6 +25,9 @@
                     <button name="action_create_suggested_mo" type="object" string="Create Suggested MOs"
                             class="btn-secondary"
                             modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', 'not in', ['draft', 'calculated'])]}"/>
+                    <button name="action_undo_created_mo" type="object" string="Undo Created MOs"
+                            class="btn-secondary"
+                            modifiers="{'invisible': [('mrp_production_ids', '=', False)]}"/>
                     <button name="action_calculate" type="object" string="Calculate"
                             modifiers="{'invisible': [('status', '!=', 'draft')]}"/>
                     <button name="action_create_mo" type="object" string="Create MO (Planner)"
@@ -73,6 +76,15 @@
                                     </form>
                                 </field>
                             </group>
+                            <group string="Selected Products">
+                                <field name="product_summary_ids">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="product_id"/>
+                                        <field name="qty"/>
+                                        <field name="uom_id"/>
+                                    </tree>
+                                </field>
+                            </group>
                         </page>
                         <page string="Batch Lines">
                             <field name="line_ids">
@@ -90,6 +102,10 @@
                             </field>
                         </page>
                         <page string="Shortage">
+                            <group>
+                                <field name="shortage_last_run" readonly="1"/>
+                                <field name="shortage_last_run_by" readonly="1"/>
+                            </group>
                             <field name="shortage_line_ids">
                                 <tree create="0" edit="0" delete="0"
                                       decoration-danger="shortage_qty &gt; 0"
@@ -154,6 +170,7 @@
                                         <field name="name"/>
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
+                                        <field name="origin"/>
                                         <field name="date_start"/>
                                         <field name="state"/>
                                     </tree>

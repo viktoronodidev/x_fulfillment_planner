@@ -93,10 +93,26 @@ class PlanningBatch(models.Model):
         string='Shortage Lines',
         readonly=True,
     )
+    product_summary_ids = fields.One2many(
+        comodel_name='planning.batch.product_summary',
+        inverse_name='batch_id',
+        string='Selected Products',
+        compute='_compute_product_summary_ids',
+        store=True,
+    )
     shortage_count = fields.Integer(
         string='Shortage Count',
         compute='_compute_shortage_count',
         store=True,
+    )
+    shortage_last_run = fields.Datetime(
+        string='Shortage Analyzed At',
+        readonly=True,
+    )
+    shortage_last_run_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Shortage Analyzed By',
+        readonly=True,
     )
 
     def action_open_select_sales_orders(self):
@@ -120,6 +136,25 @@ class PlanningBatch(models.Model):
     def _compute_shortage_count(self):
         for batch in self:
             batch.shortage_count = len(batch.shortage_line_ids)
+
+    @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
+    def _compute_product_summary_ids(self):
+        for batch in self:
+            summary = {}
+            for line in batch.line_ids.filtered('selected'):
+                product = line.product_id
+                if not product:
+                    continue
+                summary[product] = summary.get(product, 0.0) + line.qty_product_uom
+
+            values = [(5, 0, 0)]
+            for product, qty in summary.items():
+                values.append((0, 0, {
+                    'product_id': product.id,
+                    'uom_id': product.uom_id.id,
+                    'qty': qty,
+                }))
+            batch.product_summary_ids = values
 
     def action_analyze_shortage(self):
         self.ensure_one()
@@ -172,6 +207,8 @@ class PlanningBatch(models.Model):
                 'source_type': 'so',
                 'related_line_ids': [(6, 0, list(line_ids_by_product.get(product, set())))],
             })
+        self.shortage_last_run = fields.Datetime.now()
+        self.shortage_last_run_by = self.env.user
 
     def action_create_suggested_mo(self):
         self.ensure_one()
@@ -207,6 +244,22 @@ class PlanningBatch(models.Model):
         else:
             raise UserError(_('No Manufacturing Orders were created.'))
 
+    def action_undo_created_mo(self):
+        self.ensure_one()
+        mos = self.mrp_production_ids
+        if not mos:
+            return
+        non_draft = mos.filtered(lambda mo: mo.state != 'draft')
+        if non_draft:
+            raise UserError(_('Only draft Manufacturing Orders can be removed.'))
+
+        self.line_ids.filtered(lambda l: l.mrp_production_id in mos).write({
+            'mrp_production_id': False,
+            'status': 'ok',
+            'message': False,
+        })
+        mos.unlink()
+        self.mrp_production_ids = [(5, 0, 0)]
     def _get_bom_map(self, products):
         if not products:
             return {}
