@@ -311,7 +311,7 @@
                         </page>
                         <page string="Procurement">
                             <group>
-                                <label string="Planned for v0.5+"/>
+                                <div class="o_form_label">Planned for v0.5+</div>
                             </group>
                         </page>
                         <page string="Workflow overview">
