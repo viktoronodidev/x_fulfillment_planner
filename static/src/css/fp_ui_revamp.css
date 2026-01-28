@@ -90,8 +90,8 @@
 }
 
 .fp_section--shortage {
-    border: 2px solid #111111;
-    box-shadow: 0 0 0 2px #f2c94c;
+    border: 1px solid #e5e7eb;
+    box-shadow: none;
 }
 
 .fp_section--selected-products {
