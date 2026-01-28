@@ -1,6 +1,6 @@
 {
-    'name': 'Fulfillment Planner (v0.4.09)',
-    'version': '17.0.0.4.09',
+    'name': 'Fulfillment Planner (v0.4.2)',
+    'version': '17.0.0.4.2',
     'license': 'LGPL-3',
     'summary': 'Fulfillment planning control module',
     'depends': ['base', 'sale', 'purchase', 'mrp', 'stock'],
@@ -13,6 +13,7 @@
     'assets': {
         'web.assets_backend': [
             'x_fulfillment_planner/static/src/css/planning_batch_select_so.css',
+            'x_fulfillment_planner/static/src/css/fp_ui_revamp.css',
         ],
     },
     'installable': True,

@@ -100,9 +100,24 @@ class PlanningBatch(models.Model):
         compute='_compute_product_summary_ids',
         store=True,
     )
+    sales_order_count = fields.Integer(
+        string='Sales Orders Included',
+        compute='_compute_sales_order_count',
+        store=True,
+    )
     shortage_count = fields.Integer(
         string='Shortage Count',
         compute='_compute_shortage_count',
+        store=True,
+    )
+    shortage_qty_total = fields.Float(
+        string='Total Shortage Qty',
+        compute='_compute_shortage_qty_total',
+        store=True,
+    )
+    mo_created_count = fields.Integer(
+        string='MOs Created',
+        compute='_compute_mo_created_count',
         store=True,
     )
     shortage_last_run = fields.Datetime(
@@ -115,12 +130,12 @@ class PlanningBatch(models.Model):
         readonly=True,
     )
     suggested_mo_created_at = fields.Datetime(
-        string='Suggested MOs Created At',
+        string='MOs Created At',
         readonly=True,
     )
     suggested_mo_created_by = fields.Many2one(
         comodel_name='res.users',
-        string='Suggested MOs Created By',
+        string='MOs Created By',
         readonly=True,
     )
 
@@ -145,6 +160,21 @@ class PlanningBatch(models.Model):
     def _compute_shortage_count(self):
         for batch in self:
             batch.shortage_count = len(batch.shortage_line_ids)
+
+    @api.depends('shortage_line_ids.shortage_qty')
+    def _compute_shortage_qty_total(self):
+        for batch in self:
+            batch.shortage_qty_total = sum(batch.shortage_line_ids.mapped('shortage_qty'))
+
+    @api.depends('mrp_production_ids')
+    def _compute_mo_created_count(self):
+        for batch in self:
+            batch.mo_created_count = len(batch.mrp_production_ids)
+
+    @api.depends('batch_order_ids')
+    def _compute_sales_order_count(self):
+        for batch in self:
+            batch.sales_order_count = len(batch.batch_order_ids)
 
     @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
@@ -275,7 +305,7 @@ class PlanningBatch(models.Model):
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
-                    'title': _('Suggested MOs created'),
+                    'title': _('MOs created'),
                     'message': _('Manufacturing Orders created for shortages.'),
                     'type': 'success',
                     'sticky': False,
@@ -319,16 +349,17 @@ class PlanningBatch(models.Model):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Suggested MOs removed'),
-                'message': _('Draft Manufacturing Orders created by this batch were removed.'),
-                'type': 'warning',
-                'sticky': False,
-                'next': {
-                    'type': 'ir.actions.client',
-                    'tag': 'soft_reload',
-                },
+                    'title': _('MOs removed'),
+                    'message': _('Draft Manufacturing Orders created by this batch were removed.'),
+                    'type': 'warning',
+                    'sticky': False,
+                    'next': {
+                        'type': 'ir.actions.client',
+                        'tag': 'soft_reload',
+                    },
+                }
             }
-        }
+
     def _get_bom_map(self, products):
         if not products:
             return {}
@@ -337,94 +368,3 @@ class PlanningBatch(models.Model):
             company_id=self.company_id.id,
         )
         return bom_map
-
-    def action_calculate(self):
-        self.ensure_one()
-        selected_lines = self.line_ids.filtered('selected')
-        if not selected_lines:
-            raise UserError(_('Please select at least one Sales Order Line.'))
-
-        company_ids = selected_lines.mapped('sale_order_id.company_id')
-        if len(company_ids) > 1:
-            raise UserError(_('Please select Sales Order Lines from a single company.'))
-
-        products = selected_lines.mapped('product_id')
-        bom_map = self._get_bom_map(products)
-
-        for batch_line in selected_lines:
-            batch_line.status = 'ok'
-            batch_line.message = False
-            product = batch_line.product_id
-            if not product:
-                batch_line.status = 'failed'
-                batch_line.message = _('Missing product on sales order line.')
-                continue
-            if product.type != 'product':
-                batch_line.status = 'failed'
-                batch_line.message = _('Product is not storable (type must be Storable Product).')
-                continue
-            bom = bom_map.get(product)
-            if not bom:
-                batch_line.status = 'failed'
-                batch_line.message = _('No Bill of Materials found for product.')
-                continue
-
-        self.status = 'calculated'
-
-    def action_create_mo(self):
-        self.ensure_one()
-        selected_lines = self.line_ids.filtered('selected')
-        if not selected_lines:
-            raise UserError(_('Please select at least one Sales Order Line.'))
-
-        ok_lines = selected_lines.filtered(lambda l: l.status == 'ok')
-        already_linked = ok_lines.filtered(lambda l: l.mrp_production_id)
-        if already_linked:
-            for line in already_linked:
-                line.status = 'failed'
-                line.message = _('MO already created for this line.')
-        ok_lines = ok_lines.filtered(lambda l: not l.mrp_production_id)
-        if not ok_lines:
-            raise UserError(_('No valid lines to create Manufacturing Orders.'))
-
-        products = ok_lines.mapped('product_id')
-        bom_map = self._get_bom_map(products)
-
-        qty_by_product = {}
-        lines_by_product = {}
-        for line in ok_lines:
-            product = line.product_id
-            qty_by_product[product] = qty_by_product.get(product, 0.0) + line.qty_product_uom
-            lines_by_product.setdefault(product, []).append(line)
-
-        created_mos = self.env['mrp.production']
-        for product, qty in qty_by_product.items():
-            if qty <= 0:
-                for line in lines_by_product.get(product, []):
-                    line.status = 'failed'
-                    line.message = _('Quantity is zero after conversion.')
-                continue
-            bom = bom_map.get(product)
-            if not bom:
-                for line in lines_by_product.get(product, []):
-                    line.status = 'failed'
-                    line.message = _('No Bill of Materials found for product.')
-                continue
-
-            mo_vals = {
-                'product_id': product.id,
-                'product_qty': qty,
-                'product_uom_id': product.uom_id.id,
-                'bom_id': bom.id,
-                'origin': self.name,
-            }
-            mo = self.env['mrp.production'].create(mo_vals)
-            created_mos |= mo
-            for line in lines_by_product.get(product, []):
-                line.mrp_production_id = mo.id
-
-        if created_mos:
-            self.mrp_production_ids = [(4, mo.id) for mo in created_mos]
-            self.status = 'confirmed'
-        else:
-            raise UserError(_('No Manufacturing Orders were created.'))

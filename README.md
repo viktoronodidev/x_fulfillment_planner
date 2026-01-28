@@ -1,4 +1,4 @@
-Current status (v0.4.09) – In progress
+Current status (v0.4.2) – UI revamp in progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -6,12 +6,13 @@ Implemented in Odoo 17 Community:
   - planning.batch.shortage model (product-level shortage storage)
   - Analyze Shortage button (on-hand + confirmed/in-progress MO supply)
   - Shortage table with red/green status and drill-down to SO lines
-  - Create Suggested MOs (shortage qty only)
+  - Create MOs (shortage qty only)
   - Last run info (date + user) + completion notification
   - Manufacture tab with MOs + MO lines + created at/by
-  - Undo Created MOs moved to Manufacture tab (info popup when none)
-  - Selection tab shows aggregated Selected Products list
-- Batch header buttons: Select Sales Orders, Calculate, Create MO (Planner)
+  - Undo MOs on Manufacture (info popup when none)
+  - Selection shows aggregated Selected Products list
+- Batch header buttons: Select Sales Orders, Analyze Shortage, Create MOs
+- Dashboard layout (KPI bar + two-column blocks: Selection, Batch Lines, Shortage, Manufacture)
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
   - search by Order/Customer
@@ -20,8 +21,6 @@ Implemented in Odoo 17 Community:
   - SO rows read-only, row-open form shows SO number + SO lines (read-only)
   - Product Summary aggregates selected SO lines by product + UoM
   - Load Sales Orders links selected SOs and SO lines to the batch
-- Calculate = validation only (sets status/message on batch lines, moves batch to Calculated)
-- Create MO = persistence (aggregated MO per product, default BOM, links MO to batch lines)
 - Company filter applied when multi-company is active
 
 Codex prompt – v0.1 (Planning Batch alap)
