@@ -177,6 +177,21 @@
     text-align: center;
 }
 
+.fp_select_so .o_group,
+.fp_select_so .o_group_col {
+    width: 100%;
+}
+
+.fp_select_so .o_list_view,
+.fp_select_so .o_list_renderer,
+.fp_select_so .o_list_view .o_list_table {
+    width: 100%;
+}
+
+.fp_select_so .o_list_view .o_list_table {
+    table-layout: auto;
+}
+
 .fp_dashboard .o_list_view table {
     table-layout: auto;
 }
