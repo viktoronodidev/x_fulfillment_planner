@@ -89,4 +89,7 @@ class PlanningBatchLine(models.Model):
             for order in batch.batch_order_ids:
                 if not order.batch_line_ids:
                     order.unlink()
+            batch.shortage_line_ids.unlink()
+            batch.shortage_last_run = False
+            batch.shortage_last_run_by = False
         return res
