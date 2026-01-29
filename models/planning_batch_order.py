@@ -1,5 +1,5 @@
-from odoo import fields, models
-from odoo import _
+from odoo import fields, models, _
+from odoo.exceptions import UserError
 
 
 class PlanningBatchOrder(models.Model):
@@ -56,6 +56,9 @@ class PlanningBatchOrder(models.Model):
     def unlink(self):
         batches = self.mapped('batch_id')
         orders = self.mapped('sale_order_id')
+        for batch in batches:
+            if batch.mrp_production_ids:
+                raise UserError(_('You cannot remove Sales Orders while Manufacturing Orders exist for this batch.'))
         for batch in batches:
             batch.line_ids.filtered(lambda l: l.sale_order_id in orders).unlink()
         res = super().unlink()

@@ -133,32 +133,29 @@ class PlanningBatchSelectSO(models.TransientModel):
             raise UserError(_('Please select at least one Sales Order.'))
 
         batch = self.batch_id
+        # Reset selections and rebuild from scratch
+        batch.line_ids.unlink()
+        batch.batch_order_ids.unlink()
         batch.sale_order_ids = [(6, 0, selected_orders.ids)]
 
-        existing_orders = set(batch.batch_order_ids.mapped('sale_order_id').ids)
         for order in selected_orders:
-            if order.id not in existing_orders:
-                self.env['planning.batch.order'].create({
-                    'batch_id': batch.id,
-                    'sale_order_id': order.id,
-                })
-        batch.batch_order_ids.filtered(lambda o: o.sale_order_id not in selected_orders).unlink()
+            self.env['planning.batch.order'].create({
+                'batch_id': batch.id,
+                'sale_order_id': order.id,
+            })
 
-        existing_lines = {line.sale_order_line_id.id: line for line in batch.line_ids}
         order_lines = self.env['sale.order.line'].search([
             ('order_id', 'in', selected_orders.ids),
             ('display_type', '=', False),
         ])
         for line in order_lines:
-            if line.id not in existing_lines:
-                batch_order = batch.batch_order_ids.filtered(lambda o: o.sale_order_id == line.order_id)
-                if batch_order:
-                    self.env['planning.batch.line'].create({
-                        'batch_id': batch.id,
-                        'batch_order_id': batch_order.id,
-                        'sale_order_line_id': line.id,
-                        'selected': True,
-                    })
-        batch.line_ids.filtered(lambda l: l.sale_order_id not in selected_orders).unlink()
+            batch_order = batch.batch_order_ids.filtered(lambda o: o.sale_order_id == line.order_id)
+            if batch_order:
+                self.env['planning.batch.line'].create({
+                    'batch_id': batch.id,
+                    'batch_order_id': batch_order.id,
+                    'sale_order_line_id': line.id,
+                    'selected': True,
+                })
 
         return {'type': 'ir.actions.act_window_close'}

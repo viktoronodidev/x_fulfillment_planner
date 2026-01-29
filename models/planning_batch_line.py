@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 
 class PlanningBatchLine(models.Model):
@@ -77,3 +78,15 @@ class PlanningBatchLine(models.Model):
             line.qty_product_uom = line.product_uom._compute_quantity(
                 line.product_uom_qty, product.uom_id
             )
+
+    def unlink(self):
+        batches = self.mapped('batch_id')
+        for batch in batches:
+            if batch.mrp_production_ids:
+                raise UserError(_('You cannot remove Sales Order Lines while Manufacturing Orders exist for this batch.'))
+        res = super().unlink()
+        for batch in batches:
+            for order in batch.batch_order_ids:
+                if not order.batch_line_ids:
+                    order.unlink()
+        return res
