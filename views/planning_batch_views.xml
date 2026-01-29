@@ -99,7 +99,9 @@
                                         <span class="fp_badge fp_badge--sales fp_badge--center">Sales Orders</span>
                                     </summary>
                                     <field name="batch_order_ids" options="{'no_create': True}">
-                                        <tree create="0" edit="0" delete="1">
+                                        <tree create="0" edit="0" delete="0">
+                                            <button name="action_remove_from_batch" type="object" icon="fa-trash"
+                                                    string="" class="btn-link"/>
                                             <field name="sale_order_id"/>
                                             <field name="partner_id"/>
                                             <field name="date_order"/>
@@ -220,7 +222,9 @@
                         <page string="Selection">
                             <group>
                                 <field name="batch_order_ids" options="{'no_create': True}">
-                                    <tree create="0" edit="0" delete="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <button name="action_remove_from_batch" type="object" icon="fa-trash"
+                                                string="" class="btn-link"/>
                                         <field name="sale_order_id"/>
                                         <field name="partner_id"/>
                                         <field name="date_order"/>

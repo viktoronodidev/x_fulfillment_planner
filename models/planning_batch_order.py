@@ -1,4 +1,5 @@
 from odoo import fields, models
+from odoo import _
 
 
 class PlanningBatchOrder(models.Model):
@@ -63,3 +64,12 @@ class PlanningBatchOrder(models.Model):
             if not batch.batch_order_ids:
                 batch.sale_order_ids = [(5, 0, 0)]
         return res
+
+    def action_remove_from_batch(self):
+        self.ensure_one()
+        batch = self.batch_id
+        self.unlink()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'soft_reload',
+        }
