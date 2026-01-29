@@ -203,13 +203,13 @@ class PlanningBatch(models.Model):
         for batch in self:
             batch.sales_order_count = len(batch.batch_order_ids)
 
-    @api.depends('line_ids.selected', 'line_ids.product_id')
+    @api.depends('line_ids', 'line_ids.selected', 'line_ids.product_id')
     def _compute_product_count(self):
         for batch in self:
             products = batch.line_ids.filtered('selected').mapped('product_id')
             batch.product_count = len(products)
 
-    @api.depends('line_ids.selected', 'line_ids.product_id')
+    @api.depends('line_ids', 'line_ids.selected', 'line_ids.product_id')
     def _compute_bom_missing_ids(self):
         for batch in self:
             selected_products = batch.line_ids.filtered('selected').mapped('product_id')
@@ -226,7 +226,7 @@ class PlanningBatch(models.Model):
             batch.bom_missing_ids = values
             batch.bom_missing_count = len(missing)
 
-    @api.depends('line_ids.selected', 'line_ids.qty_product_uom', 'shortage_line_ids.shortage_qty')
+    @api.depends('line_ids', 'line_ids.selected', 'line_ids.qty_product_uom', 'shortage_line_ids.shortage_qty')
     def _compute_coverage_metrics(self):
         for batch in self:
             selected_lines = batch.line_ids.filtered('selected')
@@ -238,7 +238,7 @@ class PlanningBatch(models.Model):
             else:
                 batch.mo_coverage_pct = 0.0
 
-    @api.depends('line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
+    @api.depends('line_ids', 'line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
         for batch in self:
             summary = {}
