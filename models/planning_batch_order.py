@@ -55,7 +55,11 @@ class PlanningBatchOrder(models.Model):
     def unlink(self):
         batches = self.mapped('batch_id')
         orders = self.mapped('sale_order_id')
+        for batch in batches:
+            batch.line_ids.filtered(lambda l: l.sale_order_id in orders).unlink()
         res = super().unlink()
         for batch in batches:
             batch.sale_order_ids = [(3, so.id) for so in orders]
+            if not batch.batch_order_ids:
+                batch.sale_order_ids = [(5, 0, 0)]
         return res
