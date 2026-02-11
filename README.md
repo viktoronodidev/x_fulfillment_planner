@@ -170,40 +170,20 @@ Definition of Done (v0.4):
 •	Javasolt MO létrehozható a hiányra.
 •	Készletváltozásra nincs „csendes” rossz eredmény (jelez vagy újraszámol).
 ________________________________________
-Codex prompt – v0.5 (Gyártási igénylista – SO + MO + készlethiány aggregálva)
-Prompt:
-Odoo 17 Community, x_fulfillment_planner.
-Ez a v0.5, v0.4-re épül.
-Cél: egy aggregált igénylista (planning backlog), ami összevonja: SO igényeket + meglévő MO-kat + hiányt.
-Feladat:
-1.	Vezess be egy „Batch Lines” koncepciót (új modell vagy strukturált tárolás):
-•	termék szintű aggregáció
-•	igény mennyiség (SO-ból)
-•	már lefedett mennyiség (MO / készlet)
-•	nettó hiány
-2.	UI a Batch-ben:
-•	egy táblázat termékenként
-•	drill-down linkek: mely SO-k és MO-k adják az értéket
-3.	Műveletek:
-•	„Create MO from net shortage” termékenként vagy tömegesen
-4.	Konszisztencia:
-•	refresh újraszámolja a sorokat
-•	legyen egy „Last computed at” jellegű információ (ha szükséges)
-Korlátok:
-•	még nincs veszteség% számítás (az v0.6)
-•	még nincs teljes lánc automatizmus (az v0.7)
-•	teljes fájlokat adj vissza
-Minden döntési pontnál kérdezz, ha:
-•	aggregáció kulcsa: product + UoM? warehouse? company?
-•	meglévő MO-k hogyan számítsanak bele (state szűrés)?
-•	részszállítás / részgyártás kezelése MVP-ben kell-e?
-Definition of Done (v0.5):
-•	Batch-ben látszik termékszintű aggregált igénylista.
-•	Nettó hiány helyes.
-•	MO generálás működik nettó hiányra.
-•	Drill-down működik.
+Roadmap (overridden – current plan)
+v0.5 – Polishing + UI revamp (“One app” title: all relevant modules in one app)
+• Validation revamp (details later)
+v0.6 – Purchase Order & PO line shortage from aggregation
+• Demand source: batch-created MOs only (scope-limited)
+• Same behavior as MOs, but demand comes from MOs created, not Sales Orders
+v0.7 – Multi BOM logic
+v0.8 – Polishing + validation revamp
+v0.9 – UI revamp + polishing
+v1.0 – Full automation + control points
+• Planner ready: minimal user action for daily fulfillment
+• Periodic procurement planning supported
 ________________________________________
-Codex prompt – v0.6 (Veszteség % kezelése BOM-on – custom logika)
+Codex prompt – v0.6 (legacy, superseded by roadmap above)
 Prompt:
 Odoo 17 Community, x_fulfillment_planner.
 Ez a v0.6, v0.5-re épül.
