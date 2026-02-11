@@ -2,7 +2,7 @@ Current status (v0.4.31) – UI revamp in progress
 Release date: 2026-01-28
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
-- Shortage analysis (v0.4.01):
+- Shortage analysis (v0.4.01+):
   - planning.batch.shortage model (product-level shortage storage)
   - Analyze Shortage button (on-hand + confirmed/in-progress MO supply)
   - Shortage table with red/green status and drill-down to SO lines
@@ -10,10 +10,12 @@ Implemented in Odoo 17 Community:
   - Last run info (date + user) + completion notification
   - Manufacture tab with MOs + MO lines + created at/by
   - Undo MOs on Manufacture (info popup when none)
-  - Selection shows aggregated Selected Products list
 - Batch header buttons: Select Sales Orders, Analyze Shortage, Create MOs
-- Dashboard layout (full-width, collapsible sections)
-- Tabs restored: Selection → Shortage → Manufacture → Procurement
+- Dashboard layout (full-width, collapsible sections) + KPI bar
+  - Sales Orders Included, Products Included, Products without BOM, MO Coverage %, Uncovered Demand Qty,
+    Shortage Count, Shortage Qty, MOs Created, Last Analyzed
+- Tabs: Dashboard, Selection, Shortage, Manufacture, Procurement, Workflow overview
+- Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
   - search by Order/Customer
@@ -22,6 +24,10 @@ Implemented in Odoo 17 Community:
   - SO rows read-only, row-open form shows SO number + SO lines (read-only)
   - Product Summary aggregates selected SO lines by product + UoM
   - Load Sales Orders links selected SOs and SO lines to the batch
+- Safety:
+  - cannot delete Sales Orders / lines when MOs exist
+  - deleting a Sales Order removes its batch lines
+  - deleting a Sales Order line clears Shortage analysis
 - Company filter applied when multi-company is active
 
 Codex prompt – v0.1 (Planning Batch alap)
