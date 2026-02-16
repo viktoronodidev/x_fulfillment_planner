@@ -1,4 +1,4 @@
-Current status (v0.5.01) – One app navigation (Sales/Manufacturing/Purchase/Inventory)
+Current status (v0.5.02) – One app navigation (Sales/Manufacturing/Purchase/Inventory)
 Release date: 2026-01-29
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -17,9 +17,9 @@ Implemented in Odoo 17 Community:
 - Tabs: Dashboard, Selection, Shortage, Manufacture, Procurement, Workflow overview
 - Unified app navigation:
   - Planner + Sales + Manufacturing + Purchase + Inventory menus inside Fulfillment Planner
-  - Sales: Orders / To Invoice / Products / Reporting
+  - Sales: Orders / To Invoice / Products / Customers / Reporting
   - Manufacturing: Manufacturing Orders / Bills of Materials / Reporting
-  - Purchase: RFQs / Purchase Orders / Products / Reporting
+  - Purchase: RFQs / Purchase Orders / Products / Vendors / Reporting
   - Inventory: Receipts / Deliveries / Internal Transfers / Products / Reporting
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):

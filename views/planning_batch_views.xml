@@ -500,6 +500,7 @@
     <menuitem id="menu_fp_sales_orders" name="Orders" parent="menu_fp_sales_root" action="sale.action_orders" sequence="10"/>
     <menuitem id="menu_fp_sales_to_invoice" name="To Invoice" parent="menu_fp_sales_root" action="sale.action_orders_to_invoice" sequence="20"/>
     <menuitem id="menu_fp_sales_products" name="Products" parent="menu_fp_sales_root" action="product.product_template_action" sequence="30"/>
+    <menuitem id="menu_fp_sales_customers" name="Customers" parent="menu_fp_sales_root" action="account.res_partner_action_customer" sequence="35"/>
     <menuitem id="menu_fp_sales_reporting" name="Reporting" parent="menu_fp_sales_root" action="sale.action_order_report_all" sequence="40"/>
 
     <menuitem id="menu_fp_mrp_root" name="Manufacturing" parent="menu_fulfillment_planner_root" sequence="20"/>
@@ -511,6 +512,7 @@
     <menuitem id="menu_fp_purchase_rfq" name="RFQs" parent="menu_fp_purchase_root" action="purchase.purchase_rfq" sequence="10"/>
     <menuitem id="menu_fp_purchase_orders" name="Purchase Orders" parent="menu_fp_purchase_root" action="purchase.purchase_form_action" sequence="20"/>
     <menuitem id="menu_fp_purchase_products" name="Products" parent="menu_fp_purchase_root" action="purchase.product_normal_action_puchased" sequence="30"/>
+    <menuitem id="menu_fp_purchase_vendors" name="Vendors" parent="menu_fp_purchase_root" action="account.res_partner_action_supplier" sequence="35"/>
     <menuitem id="menu_fp_purchase_reporting" name="Reporting" parent="menu_fp_purchase_root" action="purchase.action_purchase_order_report_all" sequence="40"/>
 
     <menuitem id="menu_fp_inventory_root" name="Inventory" parent="menu_fulfillment_planner_root" sequence="40"/>
