@@ -1,3 +1,5 @@
+from lxml import etree
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from datetime import timedelta
@@ -167,6 +169,20 @@ class PlanningBatch(models.Model):
         string='MOs Created By',
         readonly=True,
     )
+
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        result = super().fields_view_get(view_id=view_id, view_type=view_type, toolbar=toolbar, submenu=submenu)
+        if view_type == 'tree':
+            has_draft = self.search_count([
+                ('status', '=', 'draft'),
+                ('company_id', '=', self.env.company.id),
+            ])
+            if has_draft:
+                doc = etree.XML(result['arch'])
+                doc.set('create', 'false')
+                result['arch'] = etree.tostring(doc, encoding='unicode')
+        return result
 
     @api.constrains('status', 'company_id')
     def _check_single_draft_per_company(self):
@@ -458,6 +474,7 @@ class PlanningBatch(models.Model):
         self.mrp_production_ids = [(5, 0, 0)]
         self.suggested_mo_created_at = False
         self.suggested_mo_created_by = False
+        self._reset_to_draft()
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',

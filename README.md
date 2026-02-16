@@ -1,4 +1,4 @@
-Current status (v0.5.03) – Validation revamp (batch + SO locking)
+Current status (v0.5.04) – Validation revamp (batch + SO locking)
 Release date: 2026-02-16
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -23,9 +23,11 @@ Implemented in Odoo 17 Community:
   - Inventory: Receipts / Deliveries / Internal Transfers / Products / Reporting
 - Validation rules:
   - only one Draft batch per company
+  - Planning Batch list hides `New` when a Draft batch already exists in current company
   - shortage analysis auto-resets to Draft after 30 minutes (on open/list)
   - shortage clears + Draft reset when linked sales orders/lines change
   - sales orders locked while linked to any batch; line edits blocked except pricing
+  - Undo MOs now reverts batch status to Draft
   - SO line fulfillment status: new → planned → delivered → invoiced
   - SO fulfillment status computed from line statuses
 - Selected Products aggregated list + “Need BoM correction” list
