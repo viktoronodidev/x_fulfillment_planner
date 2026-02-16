@@ -127,7 +127,10 @@ class SaleOrderLine(models.Model):
         batches = batch_lines.mapped('batch_id')
         batches._reset_shortage_on_sales_change()
 
+    @api.model_create_multi
     def create(self, vals_list):
+        if isinstance(vals_list, dict):
+            vals_list = [vals_list]
         orders = self.env['sale.order']
         for vals in vals_list:
             if vals.get('order_id'):

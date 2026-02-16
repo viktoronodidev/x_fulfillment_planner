@@ -1,4 +1,4 @@
-Current status (v0.5.04) – Validation revamp (batch + SO locking)
+Current status (v0.5.05) – Validation revamp (batch + SO locking)
 Release date: 2026-02-16
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -28,6 +28,7 @@ Implemented in Odoo 17 Community:
   - shortage clears + Draft reset when linked sales orders/lines change
   - sales orders locked while linked to any batch; line edits blocked except pricing
   - Undo MOs now reverts batch status to Draft
+  - fixed `sale.order.line.create` compatibility for delivery/shipping line creation flow
   - SO line fulfillment status: new → planned → delivered → invoiced
   - SO fulfillment status computed from line statuses
 - Selected Products aggregated list + “Need BoM correction” list
