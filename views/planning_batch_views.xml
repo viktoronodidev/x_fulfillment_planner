@@ -521,4 +521,7 @@
     <menuitem id="menu_fp_inventory_internal" name="Internal Transfers" parent="menu_fp_inventory_root" action="stock.action_picking_tree_internal" sequence="30"/>
     <menuitem id="menu_fp_inventory_products" name="Products" parent="menu_fp_inventory_root" action="stock.product_template_action_product" sequence="40"/>
     <menuitem id="menu_fp_inventory_reporting" name="Reporting" parent="menu_fp_inventory_root" action="stock.action_product_stock_view" sequence="50"/>
+
+    <menuitem id="menu_fp_dashboards_root" name="Dashboards" parent="menu_fulfillment_planner_root"
+              action="spreadsheet_dashboard.ir_actions_dashboard_action" sequence="50"/>
 </odoo>

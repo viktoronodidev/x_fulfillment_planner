@@ -1,0 +1,9 @@
+<odoo>
+    <record id="base.default_user" model="res.users">
+        <field name="action_id" ref="x_fulfillment_planner.action_planning_batch"/>
+    </record>
+
+    <record id="mail.menu_root_discuss" model="ir.ui.menu">
+        <field name="active">False</field>
+    </record>
+</odoo>

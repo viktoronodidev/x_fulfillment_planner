@@ -1,4 +1,4 @@
-Current status (v0.5.07) – Validation revamp (batch + SO locking)
+Current status (v0.5.08) – Validation revamp (batch + SO locking)
 Release date: 2026-02-16
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -36,6 +36,11 @@ Implemented in Odoo 17 Community:
   - `sale.order.priority` (Selection 1..5, default 3)
   - `sale.order.line.reserved` (Boolean)
   - `schedule_date` and `priority` positioned under `Customer` on SO form with visible labels
+  - `schedule_date` and `priority` are available on Sales Order list view as optional columns
+- Default UI behavior:
+  - Fulfillment Planner set as default home action on login (internal users + default user template)
+  - Discuss app root menu is hidden
+  - Dashboards entry added into Fulfillment Planner app navigation
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
