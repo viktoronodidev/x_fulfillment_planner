@@ -7,9 +7,9 @@
             <xpath expr="//header" position="inside">
                 <field name="fulfillment_state" widget="statusbar" statusbar_visible="new,planned,delivered,invoiced"/>
             </xpath>
-            <xpath expr="//group[@name='sale_header']" position="inside">
-                <field name="schedule_date"/>
-                <field name="priority"/>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="schedule_date" string="Schedule Date"/>
+                <field name="priority" string="Priority"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_fulfillment_batches" type="object" class="oe_stat_button" icon="fa-cubes"
