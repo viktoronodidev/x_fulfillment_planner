@@ -1,4 +1,4 @@
-Current status (v0.5.05) – Validation revamp (batch + SO locking)
+Current status (v0.5.06) – Validation revamp (batch + SO locking)
 Release date: 2026-02-16
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -31,6 +31,10 @@ Implemented in Odoo 17 Community:
   - fixed `sale.order.line.create` compatibility for delivery/shipping line creation flow
   - SO line fulfillment status: new → planned → delivered → invoiced
   - SO fulfillment status computed from line statuses
+- Sales fields:
+  - `sale.order.schedule_date` (Date)
+  - `sale.order.priority` (Selection 1..5, default 3)
+  - `sale.order.line.reserved` (Boolean)
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

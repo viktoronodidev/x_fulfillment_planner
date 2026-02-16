@@ -5,6 +5,20 @@ from odoo.exceptions import UserError
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    schedule_date = fields.Date(
+        string='Schedule Date',
+    )
+    priority = fields.Selection(
+        [
+            ('1', '1'),
+            ('2', '2'),
+            ('3', '3'),
+            ('4', '4'),
+            ('5', '5'),
+        ],
+        string='Priority',
+        default='3',
+    )
     fulfillment_batch_ids = fields.Many2many(
         comodel_name='planning.batch',
         relation='planning_batch_sale_order_rel',
@@ -86,6 +100,10 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    reserved = fields.Boolean(
+        string='Reserved',
+        default=False,
+    )
     planning_batch_line_ids = fields.One2many(
         comodel_name='planning.batch.line',
         inverse_name='sale_order_line_id',
@@ -143,7 +161,7 @@ class SaleOrderLine(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        allowed_fields = {'price_unit', 'discount', 'tax_id'}
+        allowed_fields = {'price_unit', 'discount', 'tax_id', 'reserved'}
         if vals:
             if any(field not in allowed_fields for field in vals.keys()):
                 locked = self.mapped('order_id').filtered('fulfillment_locked')
