@@ -1,6 +1,6 @@
 {
-    'name': 'Fulfillment Planner (v0.5.02)',
-    'version': '17.0.0.5.02',
+    'name': 'Fulfillment Planner (v0.5.03)',
+    'version': '17.0.0.5.03',
     'license': 'LGPL-3',
     'summary': 'Fulfillment planning control module',
     'depends': ['base', 'sale', 'purchase', 'mrp', 'stock'],
@@ -9,6 +9,7 @@
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'views/planning_batch_views.xml',
+        'views/sale_order_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

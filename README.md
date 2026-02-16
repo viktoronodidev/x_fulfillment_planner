@@ -1,5 +1,5 @@
-Current status (v0.5.02) – One app navigation (Sales/Manufacturing/Purchase/Inventory)
-Release date: 2026-01-29
+Current status (v0.5.03) – Validation revamp (batch + SO locking)
+Release date: 2026-02-16
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
 - Shortage analysis (v0.4.01+):
@@ -21,6 +21,13 @@ Implemented in Odoo 17 Community:
   - Manufacturing: Manufacturing Orders / Bills of Materials / Reporting
   - Purchase: RFQs / Purchase Orders / Products / Vendors / Reporting
   - Inventory: Receipts / Deliveries / Internal Transfers / Products / Reporting
+- Validation rules:
+  - only one Draft batch per company
+  - shortage analysis auto-resets to Draft after 30 minutes (on open/list)
+  - shortage clears + Draft reset when linked sales orders/lines change
+  - sales orders locked while linked to any batch; line edits blocked except pricing
+  - SO line fulfillment status: new → planned → delivered → invoiced
+  - SO fulfillment status computed from line statuses
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

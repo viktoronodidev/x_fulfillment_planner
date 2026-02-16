@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from datetime import timedelta
 
 
 class PlanningBatch(models.Model):
@@ -27,6 +28,7 @@ class PlanningBatch(models.Model):
     status = fields.Selection(
         [
             ('draft', 'Draft'),
+            ('shortage_analyzed', 'Shortage Analyzed'),
             ('calculated', 'Calculated'),
             ('confirmed', 'Confirmed'),
             ('done', 'Done'),
@@ -166,6 +168,19 @@ class PlanningBatch(models.Model):
         readonly=True,
     )
 
+    @api.constrains('status', 'company_id')
+    def _check_single_draft_per_company(self):
+        for batch in self:
+            if batch.status != 'draft':
+                continue
+            domain = [
+                ('id', '!=', batch.id),
+                ('status', '=', 'draft'),
+                ('company_id', '=', batch.company_id.id),
+            ]
+            if self.search_count(domain):
+                raise UserError(_('Only one Draft Planning Batch is allowed per company.'))
+
     def action_open_select_sales_orders(self):
         self.ensure_one()
         wizard = self.env['planning.batch.select.so'].create({
@@ -257,8 +272,40 @@ class PlanningBatch(models.Model):
                 }))
             batch.product_summary_ids = values
 
+    def _clear_shortage_data(self):
+        self.shortage_line_ids.unlink()
+        self.shortage_last_run = False
+        self.shortage_last_run_by = False
+
+    def _reset_to_draft(self):
+        self._clear_shortage_data()
+        self.status = 'draft'
+
+    def _reset_shortage_on_sales_change(self):
+        for batch in self:
+            batch._clear_shortage_data()
+            if batch.status == 'shortage_analyzed':
+                batch.status = 'draft'
+
+    def _reset_stale_shortage(self):
+        now = fields.Datetime.now()
+        cutoff = now - timedelta(minutes=30)
+        stale_batches = self.filtered(
+            lambda b: b.status == 'shortage_analyzed'
+            and b.shortage_last_run
+            and b.shortage_last_run <= cutoff
+        )
+        for batch in stale_batches:
+            batch._reset_to_draft()
+
+    def read(self, fields=None, load='_classic_read'):
+        self._reset_stale_shortage()
+        return super().read(fields=fields, load=load)
+
     def action_analyze_shortage(self):
         self.ensure_one()
+        if self.status not in ['draft', 'shortage_analyzed']:
+            raise UserError(_('Shortage analysis can only be run in Draft or Shortage Analyzed status.'))
         selected_lines = self.line_ids.filtered('selected')
         if not selected_lines:
             raise UserError(_('Please select at least one Sales Order Line.'))
@@ -310,6 +357,7 @@ class PlanningBatch(models.Model):
             })
         self.shortage_last_run = fields.Datetime.now()
         self.shortage_last_run_by = self.env.user
+        self.status = 'shortage_analyzed'
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -327,6 +375,8 @@ class PlanningBatch(models.Model):
 
     def action_create_suggested_mo(self):
         self.ensure_one()
+        if self.status != 'shortage_analyzed':
+            raise UserError(_('Create MOs is only available after Shortage Analysis.'))
         shortage_lines = self.shortage_line_ids.filtered(lambda l: l.shortage_qty > 0)
         if not shortage_lines:
             raise UserError(_('No shortages to create Manufacturing Orders.'))
@@ -363,6 +413,7 @@ class PlanningBatch(models.Model):
             self.mrp_production_ids = [(4, mo.id) for mo in created_mos]
             self.suggested_mo_created_at = fields.Datetime.now()
             self.suggested_mo_created_by = self.env.user
+            self.status = 'calculated'
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',

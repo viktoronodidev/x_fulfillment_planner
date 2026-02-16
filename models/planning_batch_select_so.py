@@ -55,6 +55,12 @@ class PlanningBatchSelectSO(models.TransientModel):
         domain = [('state', '=', 'sale')]
         if self.batch_id.company_id:
             domain.append(('company_id', '=', self.batch_id.company_id.id))
+        if self.batch_id:
+            locked_orders = self.env['planning.batch'].search([
+                ('id', '!=', self.batch_id.id),
+            ]).mapped('sale_order_ids')
+            if locked_orders:
+                domain.append(('id', 'not in', locked_orders.ids))
         if self.search_text:
             term = self.search_text.strip()
             if term:
@@ -157,5 +163,6 @@ class PlanningBatchSelectSO(models.TransientModel):
                     'sale_order_line_id': line.id,
                     'selected': True,
                 })
+        batch._reset_shortage_on_sales_change()
 
         return {'type': 'ir.actions.act_window_close'}

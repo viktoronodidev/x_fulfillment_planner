@@ -66,6 +66,7 @@ class PlanningBatchOrder(models.Model):
             batch.sale_order_ids = [(3, so.id) for so in orders]
             if not batch.batch_order_ids:
                 batch.sale_order_ids = [(5, 0, 0)]
+            batch._reset_shortage_on_sales_change()
         return res
 
     def action_remove_from_batch(self):

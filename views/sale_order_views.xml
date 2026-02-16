@@ -1,0 +1,21 @@
+<odoo>
+    <record id="view_sale_order_form_fulfillment" model="ir.ui.view">
+        <field name="name">sale.order.form.fulfillment</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="fulfillment_state" widget="statusbar" statusbar_visible="new,planned,delivered,invoiced"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_fulfillment_batches" type="object" class="oe_stat_button" icon="fa-cubes"
+                        modifiers="{'invisible': [('fulfillment_batch_count', '=', 0)]}">
+                    <field name="fulfillment_batch_count" widget="statinfo" string="Fulfillment"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom_qty']" position="after">
+                <field name="fulfillment_state" widget="badge"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

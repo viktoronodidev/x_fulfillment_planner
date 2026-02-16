@@ -17,14 +17,14 @@
         <field name="arch" type="xml">
             <form string="Planning Batch" class="fp_form">
                 <header>
-                    <field name="status" widget="statusbar" statusbar_visible="draft,calculated,confirmed,done"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,shortage_analyzed,calculated,confirmed,done"/>
                     <button name="action_open_select_sales_orders" type="object" string="Select Sales Orders"
                             class="btn-primary" modifiers="{'invisible': [('status', '!=', 'draft')]}"/>
                     <button name="action_analyze_shortage" type="object" string="Analyze Shortage"
-                            class="btn-secondary" modifiers="{'invisible': [('status', 'not in', ['draft', 'calculated'])]}"/>
+                            class="btn-secondary" modifiers="{'invisible': [('status', 'not in', ['draft', 'shortage_analyzed'])]}"/>
                     <button name="action_create_suggested_mo" type="object" string="Create MOs"
                             class="btn-secondary"
-                            modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', 'not in', ['draft', 'calculated'])]}"/>
+                            modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', '!=', 'shortage_analyzed')]}"/>
                 </header>
                 <sheet class="fp_sheet fp_sheet--full">
                     <group>
