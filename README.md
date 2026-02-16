@@ -1,5 +1,5 @@
-Current status (v0.4.31) – UI revamp in progress
-Release date: 2026-01-28
+Current status (v0.5.01) – One app navigation (Sales/Manufacturing/Purchase/Inventory)
+Release date: 2026-01-29
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
 - Shortage analysis (v0.4.01+):
@@ -15,6 +15,12 @@ Implemented in Odoo 17 Community:
   - Sales Orders Included, Products Included, Products without BOM, MO Coverage %, Uncovered Demand Qty,
     Shortage Count, Shortage Qty, MOs Created, Last Analyzed
 - Tabs: Dashboard, Selection, Shortage, Manufacture, Procurement, Workflow overview
+- Unified app navigation:
+  - Planner + Sales + Manufacturing + Purchase + Inventory menus inside Fulfillment Planner
+  - Sales: Orders / To Invoice / Products / Reporting
+  - Manufacturing: Manufacturing Orders / Bills of Materials / Reporting
+  - Purchase: RFQs / Purchase Orders / Products / Reporting
+  - Inventory: Receipts / Deliveries / Internal Transfers / Products / Reporting
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

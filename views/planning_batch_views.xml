@@ -492,5 +492,31 @@
     </record>
 
     <menuitem id="menu_fulfillment_planner_root" name="Fulfillment Planner" sequence="10"/>
-    <menuitem id="menu_planning_batch" name="Planning Batches" parent="menu_fulfillment_planner_root" action="action_planning_batch" sequence="10"/>
+
+    <menuitem id="menu_fp_planner_root" name="Planner" parent="menu_fulfillment_planner_root" sequence="5"/>
+    <menuitem id="menu_planning_batch" name="Planning Batches" parent="menu_fp_planner_root" action="action_planning_batch" sequence="10"/>
+
+    <menuitem id="menu_fp_sales_root" name="Sales" parent="menu_fulfillment_planner_root" sequence="10"/>
+    <menuitem id="menu_fp_sales_orders" name="Orders" parent="menu_fp_sales_root" action="sale.action_orders" sequence="10"/>
+    <menuitem id="menu_fp_sales_to_invoice" name="To Invoice" parent="menu_fp_sales_root" action="sale.action_orders_to_invoice" sequence="20"/>
+    <menuitem id="menu_fp_sales_products" name="Products" parent="menu_fp_sales_root" action="product.product_template_action" sequence="30"/>
+    <menuitem id="menu_fp_sales_reporting" name="Reporting" parent="menu_fp_sales_root" action="sale.action_order_report_all" sequence="40"/>
+
+    <menuitem id="menu_fp_mrp_root" name="Manufacturing" parent="menu_fulfillment_planner_root" sequence="20"/>
+    <menuitem id="menu_fp_mrp_orders" name="Manufacturing Orders" parent="menu_fp_mrp_root" action="mrp.mrp_production_action" sequence="10"/>
+    <menuitem id="menu_fp_mrp_bom" name="Bills of Materials" parent="menu_fp_mrp_root" action="mrp.mrp_bom_form_action" sequence="20"/>
+    <menuitem id="menu_fp_mrp_reporting" name="Reporting" parent="menu_fp_mrp_root" action="mrp.mrp_workorder_report" sequence="30"/>
+
+    <menuitem id="menu_fp_purchase_root" name="Purchase" parent="menu_fulfillment_planner_root" sequence="30"/>
+    <menuitem id="menu_fp_purchase_rfq" name="RFQs" parent="menu_fp_purchase_root" action="purchase.purchase_rfq" sequence="10"/>
+    <menuitem id="menu_fp_purchase_orders" name="Purchase Orders" parent="menu_fp_purchase_root" action="purchase.purchase_form_action" sequence="20"/>
+    <menuitem id="menu_fp_purchase_products" name="Products" parent="menu_fp_purchase_root" action="purchase.product_normal_action_puchased" sequence="30"/>
+    <menuitem id="menu_fp_purchase_reporting" name="Reporting" parent="menu_fp_purchase_root" action="purchase.action_purchase_order_report_all" sequence="40"/>
+
+    <menuitem id="menu_fp_inventory_root" name="Inventory" parent="menu_fulfillment_planner_root" sequence="40"/>
+    <menuitem id="menu_fp_inventory_receipts" name="Receipts" parent="menu_fp_inventory_root" action="stock.action_picking_tree_incoming" sequence="10"/>
+    <menuitem id="menu_fp_inventory_deliveries" name="Deliveries" parent="menu_fp_inventory_root" action="stock.action_picking_tree_outgoing" sequence="20"/>
+    <menuitem id="menu_fp_inventory_internal" name="Internal Transfers" parent="menu_fp_inventory_root" action="stock.action_picking_tree_internal" sequence="30"/>
+    <menuitem id="menu_fp_inventory_products" name="Products" parent="menu_fp_inventory_root" action="stock.product_template_action_product" sequence="40"/>
+    <menuitem id="menu_fp_inventory_reporting" name="Reporting" parent="menu_fp_inventory_root" action="stock.action_product_stock_view" sequence="50"/>
 </odoo>
