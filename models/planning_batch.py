@@ -1,4 +1,4 @@
-from collections import defaultdict, deque
+from collections import defaultdict
 from datetime import timedelta
 
 from lxml import etree
@@ -404,44 +404,28 @@ class PlanningBatch(models.Model):
         self._clear_explosion_data()
 
         bom_cache = {}
-        queue = deque()
-        nodes_to_create = []
         demand_by_product = defaultdict(lambda: {'manufacture': 0.0, 'procure': 0.0, 'levels': []})
         source_line_ids_by_product = defaultdict(set)
 
-        for batch_line in selected_lines:
-            product = batch_line.product_id
-            if not product:
-                continue
-            queue.append({
-                'parent_id': False,
-                'parent_product_id': False,
-                'product': product,
-                'qty': batch_line.qty_product_uom,
-                'level': 0,
-                'path_ids': [product.id],
-                'path_key': product.display_name,
-                'source_sale_line_id': batch_line.sale_order_line_id.id,
-            })
-
         def get_bom(product):
             if product.id not in bom_cache:
-                bom_cache[product.id] = self._get_bom_map(product)[product]
+                bom_map = self._get_bom_map(product)
+                bom_cache[product.id] = next(iter(bom_map.values()), False)
             return bom_cache[product.id]
 
-        while queue:
-            item = queue.popleft()
-            product = item['product']
-            level = item['level']
-            qty = item['qty']
-            source_sale_line_id = item['source_sale_line_id']
+        def add_demand(product_id, supply_type, qty, level, source_sale_line_id):
+            demand_by_product[product_id][supply_type] += qty
+            demand_by_product[product_id]['levels'].append(level)
+            if source_sale_line_id:
+                source_line_ids_by_product[product_id].add(source_sale_line_id)
 
+        def create_node(parent_id, parent_product_id, product, qty, level, path_ids, path_key, source_sale_line_id):
             if level > max_depth:
-                node = self.env['planning.batch.explosion.node'].create({
+                self.env['planning.batch.explosion.node'].create({
                     'batch_id': self.id,
-                    'parent_id': item['parent_id'],
+                    'parent_id': parent_id,
                     'source_sale_line_id': source_sale_line_id,
-                    'parent_product_id': item['parent_product_id'],
+                    'parent_product_id': parent_product_id,
                     'product_id': product.id,
                     'uom_id': product.uom_id.id,
                     'level': level,
@@ -449,28 +433,23 @@ class PlanningBatch(models.Model):
                     'item_type': 'raw' if level > 0 else 'finished',
                     'supply_type': 'procure',
                     'is_leaf': True,
-                    'path_key': item['path_key'],
+                    'path_key': path_key,
                     'state': 'excluded',
                     'message': _('Excluded due to max explosion depth'),
                 })
-                nodes_to_create.append(node.id)
-                demand_by_product[product]['procure'] += qty
-                demand_by_product[product]['levels'].append(level)
-                source_line_ids_by_product[product.id].add(source_sale_line_id)
-                continue
+                add_demand(product.id, 'procure', qty, level, source_sale_line_id)
+                return
 
             bom = get_bom(product)
             item_type = 'finished' if level == 0 else 'semi'
             supply_type = 'manufacture' if bom else 'procure'
-            state = 'ok'
-            message = False
             is_leaf = not bool(bom)
 
             node = self.env['planning.batch.explosion.node'].create({
                 'batch_id': self.id,
-                'parent_id': item['parent_id'],
+                'parent_id': parent_id,
                 'source_sale_line_id': source_sale_line_id,
-                'parent_product_id': item['parent_product_id'],
+                'parent_product_id': parent_product_id,
                 'product_id': product.id,
                 'uom_id': product.uom_id.id,
                 'level': level,
@@ -479,18 +458,14 @@ class PlanningBatch(models.Model):
                 'supply_type': supply_type,
                 'bom_id': bom.id if bom else False,
                 'is_leaf': is_leaf,
-                'path_key': item['path_key'],
-                'state': state,
-                'message': message,
+                'path_key': path_key,
+                'state': 'ok',
+                'message': False,
             })
-            nodes_to_create.append(node.id)
-
-            demand_by_product[product][supply_type] += qty
-            demand_by_product[product]['levels'].append(level)
-            source_line_ids_by_product[product.id].add(source_sale_line_id)
+            add_demand(product.id, supply_type, qty, level, source_sale_line_id)
 
             if not bom:
-                continue
+                return
 
             base_qty = bom.product_uom_id._compute_quantity(
                 bom.product_qty or 1.0,
@@ -505,52 +480,58 @@ class PlanningBatch(models.Model):
                     component.uom_id,
                 )
                 required_qty = qty * (comp_qty / base_qty)
-                next_path_ids = list(item['path_ids'])
-                state = 'ok'
-                message = False
+                next_path_ids = list(path_ids)
+                next_path_key = f"{path_key} > {component.display_name}"
                 if component.id in next_path_ids:
-                    state = 'cycle'
-                    message = _('Cycle detected')
-
-                child = self.env['planning.batch.explosion.node'].create({
-                    'batch_id': self.id,
-                    'parent_id': node.id,
-                    'source_sale_line_id': source_sale_line_id,
-                    'parent_product_id': product.id,
-                    'product_id': component.id,
-                    'uom_id': component.uom_id.id,
-                    'level': level + 1,
-                    'demand_qty': required_qty,
-                    'item_type': 'raw',
-                    'supply_type': 'procure',
-                    'is_leaf': True,
-                    'path_key': f"{item['path_key']} > {component.display_name}",
-                    'state': state,
-                    'message': message,
-                })
-                nodes_to_create.append(child.id)
-                source_line_ids_by_product[component.id].add(source_sale_line_id)
-
-                if state == 'cycle':
-                    demand_by_product[component]['procure'] += required_qty
-                    demand_by_product[component]['levels'].append(level + 1)
+                    self.env['planning.batch.explosion.node'].create({
+                        'batch_id': self.id,
+                        'parent_id': node.id,
+                        'source_sale_line_id': source_sale_line_id,
+                        'parent_product_id': product.id,
+                        'product_id': component.id,
+                        'uom_id': component.uom_id.id,
+                        'level': level + 1,
+                        'demand_qty': required_qty,
+                        'item_type': 'raw',
+                        'supply_type': 'procure',
+                        'is_leaf': True,
+                        'path_key': next_path_key,
+                        'state': 'cycle',
+                        'message': _('Cycle detected'),
+                    })
+                    add_demand(component.id, 'procure', required_qty, level + 1, source_sale_line_id)
                     continue
 
                 next_path_ids.append(component.id)
-                queue.append({
-                    'parent_id': child.id,
-                    'parent_product_id': product.id,
-                    'product': component,
-                    'qty': required_qty,
-                    'level': level + 1,
-                    'path_ids': next_path_ids,
-                    'path_key': child.path_key,
-                    'source_sale_line_id': source_sale_line_id,
-                })
+                create_node(
+                    node.id,
+                    product.id,
+                    component,
+                    required_qty,
+                    level + 1,
+                    next_path_ids,
+                    next_path_key,
+                    source_sale_line_id,
+                )
+
+        for batch_line in selected_lines:
+            product = batch_line.product_id
+            if not product:
+                continue
+            create_node(
+                parent_id=False,
+                parent_product_id=False,
+                product=product,
+                qty=batch_line.qty_product_uom,
+                level=0,
+                path_ids=[product.id],
+                path_key=product.display_name,
+                source_sale_line_id=batch_line.sale_order_line_id.id,
+            )
 
         products = self.env['product.product'].browse(list(demand_by_product.keys()))
         for product in products:
-            values = demand_by_product[product]
+            values = demand_by_product[product.id]
             total_qty = values['manufacture'] + values['procure']
             available = product.with_company(self.company_id).qty_available
             uncovered = max(total_qty - available, 0.0)

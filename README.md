@@ -1,4 +1,4 @@
-Current status (v0.6.00) – Multi-level BOM structure analysis
+Current status (v0.6.01) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
