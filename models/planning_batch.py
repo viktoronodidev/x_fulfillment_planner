@@ -264,7 +264,8 @@ class PlanningBatch(models.Model):
                 (self.env.ref('x_fulfillment_planner.view_planning_batch_explosion_node_form').id, 'form'),
             ],
             'target': 'current',
-            'domain': [('batch_id', '=', self.id)],
+            # Start from level 0 only; users can drill down into children from node form.
+            'domain': [('batch_id', '=', self.id), ('parent_id', '=', False)],
             'context': {'default_batch_id': self.id, 'search_default_batch_id': self.id},
         }
 

@@ -1,4 +1,4 @@
-Current status (v0.6.01) – Multi-level BOM structure analysis
+Current status (v0.6.02) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -48,9 +48,10 @@ Implemented in Odoo 17 Community:
     - `planning.batch.demand.summary` (aggregated manufacture/procurement demand by product)
   - New Explosion tab:
     - structure run metadata
-    - explosion line list
+    - explosion line list (level 0 roots by default)
     - demand summary list
     - full-screen Manufacturing Chain view action
+    - read-only chain browsing with drill-down to child nodes
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
