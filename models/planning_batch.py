@@ -1,8 +1,10 @@
+from collections import defaultdict, deque
+from datetime import timedelta
+
 from lxml import etree
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from datetime import timedelta
 
 
 class PlanningBatch(models.Model):
@@ -111,6 +113,18 @@ class PlanningBatch(models.Model):
         compute='_compute_bom_missing_ids',
         store=True,
     )
+    explosion_node_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        inverse_name='batch_id',
+        string='Explosion Nodes',
+        readonly=True,
+    )
+    demand_summary_ids = fields.One2many(
+        comodel_name='planning.batch.demand.summary',
+        inverse_name='batch_id',
+        string='Demand Summary',
+        readonly=True,
+    )
     sales_order_count = fields.Integer(
         string='Sales Orders Included',
         compute='_compute_sales_order_count',
@@ -151,6 +165,21 @@ class PlanningBatch(models.Model):
         compute='_compute_mo_created_count',
         store=True,
     )
+    semi_product_count = fields.Integer(
+        string='Semi Products',
+        compute='_compute_explosion_metrics',
+        store=True,
+    )
+    raw_product_count = fields.Integer(
+        string='Raw Products',
+        compute='_compute_explosion_metrics',
+        store=True,
+    )
+    explosion_issue_count = fields.Integer(
+        string='Explosion Issues',
+        compute='_compute_explosion_metrics',
+        store=True,
+    )
     shortage_last_run = fields.Datetime(
         string='Shortage Analyzed At',
         readonly=True,
@@ -158,6 +187,15 @@ class PlanningBatch(models.Model):
     shortage_last_run_by = fields.Many2one(
         comodel_name='res.users',
         string='Shortage Analyzed By',
+        readonly=True,
+    )
+    explosion_last_run = fields.Datetime(
+        string='Structure Analyzed At',
+        readonly=True,
+    )
+    explosion_last_run_by = fields.Many2one(
+        comodel_name='res.users',
+        string='Structure Analyzed By',
         readonly=True,
     )
     suggested_mo_created_at = fields.Datetime(
@@ -214,6 +252,22 @@ class PlanningBatch(models.Model):
             },
         }
 
+    def action_open_manufacturing_chain(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Manufacturing Chain'),
+            'res_model': 'planning.batch.explosion.node',
+            'view_mode': 'tree,form',
+            'views': [
+                (self.env.ref('x_fulfillment_planner.view_planning_batch_explosion_node_tree').id, 'tree'),
+                (self.env.ref('x_fulfillment_planner.view_planning_batch_explosion_node_form').id, 'form'),
+            ],
+            'target': 'current',
+            'domain': [('batch_id', '=', self.id)],
+            'context': {'default_batch_id': self.id, 'search_default_batch_id': self.id},
+        }
+
     @api.depends('shortage_line_ids')
     def _compute_shortage_count(self):
         for batch in self:
@@ -257,17 +311,24 @@ class PlanningBatch(models.Model):
             batch.bom_missing_ids = values
             batch.bom_missing_count = len(missing)
 
-    @api.depends('line_ids', 'line_ids.selected', 'line_ids.qty_product_uom', 'shortage_line_ids.shortage_qty')
+    @api.depends('demand_summary_ids.uncovered_qty', 'demand_summary_ids.total_demand_qty')
     def _compute_coverage_metrics(self):
         for batch in self:
-            selected_lines = batch.line_ids.filtered('selected')
-            demand_total = sum(selected_lines.mapped('qty_product_uom'))
-            shortage_total = sum(batch.shortage_line_ids.mapped('shortage_qty'))
+            demand_total = sum(batch.demand_summary_ids.mapped('total_demand_qty'))
+            shortage_total = sum(batch.demand_summary_ids.mapped('uncovered_qty'))
             batch.uncovered_demand_qty = shortage_total
             if demand_total:
                 batch.mo_coverage_pct = (max(demand_total - shortage_total, 0.0) / demand_total) * 100.0
             else:
                 batch.mo_coverage_pct = 0.0
+
+    @api.depends('explosion_node_ids.item_type', 'explosion_node_ids.state')
+    def _compute_explosion_metrics(self):
+        for batch in self:
+            nodes = batch.explosion_node_ids
+            batch.semi_product_count = len(nodes.filtered(lambda n: n.item_type == 'semi').mapped('product_id'))
+            batch.raw_product_count = len(nodes.filtered(lambda n: n.item_type == 'raw').mapped('product_id'))
+            batch.explosion_issue_count = len(nodes.filtered(lambda n: n.state in ('cycle', 'missing_bom', 'excluded')))
 
     @api.depends('line_ids', 'line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
@@ -278,7 +339,6 @@ class PlanningBatch(models.Model):
                 if not product:
                     continue
                 summary[product] = summary.get(product, 0.0) + line.qty_product_uom
-
             values = [(5, 0, 0)]
             for product, qty in summary.items():
                 values.append((0, 0, {
@@ -293,14 +353,22 @@ class PlanningBatch(models.Model):
         self.shortage_last_run = False
         self.shortage_last_run_by = False
 
+    def _clear_explosion_data(self):
+        self.explosion_node_ids.unlink()
+        self.demand_summary_ids.unlink()
+        self.explosion_last_run = False
+        self.explosion_last_run_by = False
+
     def _reset_to_draft(self):
         self._clear_shortage_data()
+        self._clear_explosion_data()
         self.status = 'draft'
 
     def _reset_shortage_on_sales_change(self):
         for batch in self:
             batch._clear_shortage_data()
-            if batch.status == 'shortage_analyzed':
+            batch._clear_explosion_data()
+            if batch.status in ('shortage_analyzed', 'calculated'):
                 batch.status = 'draft'
 
     def _reset_stale_shortage(self):
@@ -318,59 +386,264 @@ class PlanningBatch(models.Model):
         self._reset_stale_shortage()
         return super().read(fields=fields, load=load)
 
-    def action_analyze_shortage(self):
+    def _get_bom_map(self, products):
+        if not products:
+            return {}
+        bom_map = self.env['mrp.bom']._bom_find(
+            products,
+            company_id=self.company_id.id,
+        )
+        return bom_map
+
+    def _build_explosion(self, max_depth=5):
         self.ensure_one()
-        if self.status not in ['draft', 'shortage_analyzed']:
-            raise UserError(_('Shortage analysis can only be run in Draft or Shortage Analyzed status.'))
         selected_lines = self.line_ids.filtered('selected')
         if not selected_lines:
             raise UserError(_('Please select at least one Sales Order Line.'))
 
-        self.shortage_line_ids.unlink()
+        self._clear_explosion_data()
 
-        demand_by_product = {}
-        line_ids_by_product = {}
-        for line in selected_lines:
-            so_line = line.sale_order_line_id
-            product = so_line.product_id
+        bom_cache = {}
+        queue = deque()
+        nodes_to_create = []
+        demand_by_product = defaultdict(lambda: {'manufacture': 0.0, 'procure': 0.0, 'levels': []})
+        source_line_ids_by_product = defaultdict(set)
+
+        for batch_line in selected_lines:
+            product = batch_line.product_id
             if not product:
                 continue
-            qty = so_line.product_uom._compute_quantity(
-                so_line.product_uom_qty, product.uom_id
-            )
-            demand_by_product[product] = demand_by_product.get(product, 0.0) + qty
-            line_ids_by_product.setdefault(product, set()).add(so_line.id)
+            queue.append({
+                'parent_id': False,
+                'parent_product_id': False,
+                'product': product,
+                'qty': batch_line.qty_product_uom,
+                'level': 0,
+                'path_ids': [product.id],
+                'path_key': product.display_name,
+                'source_sale_line_id': batch_line.sale_order_line_id.id,
+            })
 
-        products = list(demand_by_product.keys())
-        if not products:
-            return
+        def get_bom(product):
+            if product.id not in bom_cache:
+                bom_cache[product.id] = self._get_bom_map(product)[product]
+            return bom_cache[product.id]
 
-        mo_qty_by_product = {}
-        mo_domain = [
-            ('product_id', 'in', [p.id for p in products]),
-            ('company_id', '=', self.company_id.id),
-            ('state', 'in', ['confirmed', 'progress']),
-        ]
-        mos = self.env['mrp.production'].search(mo_domain)
-        for mo in mos:
-            product = mo.product_id
-            qty = mo.product_uom_id._compute_quantity(mo.product_qty, product.uom_id)
-            mo_qty_by_product[product] = mo_qty_by_product.get(product, 0.0) + qty
+        while queue:
+            item = queue.popleft()
+            product = item['product']
+            level = item['level']
+            qty = item['qty']
+            source_sale_line_id = item['source_sale_line_id']
 
-        for product, demand_qty in demand_by_product.items():
-            on_hand = product.with_company(self.company_id).qty_available
-            available_qty = on_hand + mo_qty_by_product.get(product, 0.0)
-            shortage_qty = max(demand_qty - available_qty, 0.0)
-            self.env['planning.batch.shortage'].create({
+            if level > max_depth:
+                node = self.env['planning.batch.explosion.node'].create({
+                    'batch_id': self.id,
+                    'parent_id': item['parent_id'],
+                    'source_sale_line_id': source_sale_line_id,
+                    'parent_product_id': item['parent_product_id'],
+                    'product_id': product.id,
+                    'uom_id': product.uom_id.id,
+                    'level': level,
+                    'demand_qty': qty,
+                    'item_type': 'raw' if level > 0 else 'finished',
+                    'supply_type': 'procure',
+                    'is_leaf': True,
+                    'path_key': item['path_key'],
+                    'state': 'excluded',
+                    'message': _('Excluded due to max explosion depth'),
+                })
+                nodes_to_create.append(node.id)
+                demand_by_product[product]['procure'] += qty
+                demand_by_product[product]['levels'].append(level)
+                source_line_ids_by_product[product.id].add(source_sale_line_id)
+                continue
+
+            bom = get_bom(product)
+            item_type = 'finished' if level == 0 else 'semi'
+            supply_type = 'manufacture' if bom else 'procure'
+            state = 'ok'
+            message = False
+            is_leaf = not bool(bom)
+
+            node = self.env['planning.batch.explosion.node'].create({
+                'batch_id': self.id,
+                'parent_id': item['parent_id'],
+                'source_sale_line_id': source_sale_line_id,
+                'parent_product_id': item['parent_product_id'],
+                'product_id': product.id,
+                'uom_id': product.uom_id.id,
+                'level': level,
+                'demand_qty': qty,
+                'item_type': 'raw' if not bom and level > 0 else item_type,
+                'supply_type': supply_type,
+                'bom_id': bom.id if bom else False,
+                'is_leaf': is_leaf,
+                'path_key': item['path_key'],
+                'state': state,
+                'message': message,
+            })
+            nodes_to_create.append(node.id)
+
+            demand_by_product[product][supply_type] += qty
+            demand_by_product[product]['levels'].append(level)
+            source_line_ids_by_product[product.id].add(source_sale_line_id)
+
+            if not bom:
+                continue
+
+            base_qty = bom.product_uom_id._compute_quantity(
+                bom.product_qty or 1.0,
+                product.uom_id,
+            ) or 1.0
+            for bom_line in bom.bom_line_ids:
+                component = bom_line.product_id
+                if not component:
+                    continue
+                comp_qty = bom_line.product_uom_id._compute_quantity(
+                    bom_line.product_qty,
+                    component.uom_id,
+                )
+                required_qty = qty * (comp_qty / base_qty)
+                next_path_ids = list(item['path_ids'])
+                state = 'ok'
+                message = False
+                if component.id in next_path_ids:
+                    state = 'cycle'
+                    message = _('Cycle detected')
+
+                child = self.env['planning.batch.explosion.node'].create({
+                    'batch_id': self.id,
+                    'parent_id': node.id,
+                    'source_sale_line_id': source_sale_line_id,
+                    'parent_product_id': product.id,
+                    'product_id': component.id,
+                    'uom_id': component.uom_id.id,
+                    'level': level + 1,
+                    'demand_qty': required_qty,
+                    'item_type': 'raw',
+                    'supply_type': 'procure',
+                    'is_leaf': True,
+                    'path_key': f"{item['path_key']} > {component.display_name}",
+                    'state': state,
+                    'message': message,
+                })
+                nodes_to_create.append(child.id)
+                source_line_ids_by_product[component.id].add(source_sale_line_id)
+
+                if state == 'cycle':
+                    demand_by_product[component]['procure'] += required_qty
+                    demand_by_product[component]['levels'].append(level + 1)
+                    continue
+
+                next_path_ids.append(component.id)
+                queue.append({
+                    'parent_id': child.id,
+                    'parent_product_id': product.id,
+                    'product': component,
+                    'qty': required_qty,
+                    'level': level + 1,
+                    'path_ids': next_path_ids,
+                    'path_key': child.path_key,
+                    'source_sale_line_id': source_sale_line_id,
+                })
+
+        products = self.env['product.product'].browse(list(demand_by_product.keys()))
+        for product in products:
+            values = demand_by_product[product]
+            total_qty = values['manufacture'] + values['procure']
+            available = product.with_company(self.company_id).qty_available
+            uncovered = max(total_qty - available, 0.0)
+            self.env['planning.batch.demand.summary'].create({
                 'batch_id': self.id,
                 'product_id': product.id,
                 'uom_id': product.uom_id.id,
-                'demand_qty': demand_qty,
-                'available_qty': available_qty,
-                'shortage_qty': shortage_qty,
-                'source_type': 'so',
-                'related_line_ids': [(6, 0, list(line_ids_by_product.get(product, set())))],
+                'manufacture_demand_qty': values['manufacture'],
+                'procurement_demand_qty': values['procure'],
+                'total_demand_qty': total_qty,
+                'available_qty': available,
+                'uncovered_qty': uncovered,
+                'level_min': min(values['levels']) if values['levels'] else 0,
+                'level_max': max(values['levels']) if values['levels'] else 0,
+                'has_bom': bool(get_bom(product)),
             })
+
+        self.explosion_last_run = fields.Datetime.now()
+        self.explosion_last_run_by = self.env.user
+        return source_line_ids_by_product
+
+    def action_analyze_structure(self):
+        self.ensure_one()
+        if self.status not in ['draft', 'shortage_analyzed']:
+            raise UserError(_('Structure analysis can only run in Draft or Shortage Analyzed status.'))
+        self._build_explosion()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Structure analysis completed'),
+                'message': _('Manufacturing chain and demand summary updated.'),
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            }
+        }
+
+    def action_analyze_shortage(self):
+        self.ensure_one()
+        if self.status not in ['draft', 'shortage_analyzed']:
+            raise UserError(_('Shortage analysis can only be run in Draft or Shortage Analyzed status.'))
+
+        source_line_ids_by_product = self._build_explosion()
+        if not self.demand_summary_ids:
+            raise UserError(_('No demand summary data found. Run structure analysis first.'))
+
+        self.shortage_line_ids.unlink()
+
+        mo_qty_by_product = defaultdict(float)
+        mo_domain = [
+            ('product_id', 'in', self.demand_summary_ids.mapped('product_id').ids),
+            ('company_id', '=', self.company_id.id),
+            ('state', 'in', ['confirmed', 'progress']),
+        ]
+        for mo in self.env['mrp.production'].search(mo_domain):
+            qty = mo.product_uom_id._compute_quantity(mo.product_qty, mo.product_id.uom_id)
+            mo_qty_by_product[mo.product_id.id] += qty
+
+        for line in self.demand_summary_ids:
+            product = line.product_id
+            source_ids = list(source_line_ids_by_product.get(product.id, set()))
+
+            if line.manufacture_demand_qty > 0:
+                on_hand = product.with_company(self.company_id).qty_available
+                available_qty = on_hand + mo_qty_by_product.get(product.id, 0.0)
+                shortage_qty = max(line.manufacture_demand_qty - available_qty, 0.0)
+                self.env['planning.batch.shortage'].create({
+                    'batch_id': self.id,
+                    'product_id': product.id,
+                    'uom_id': product.uom_id.id,
+                    'demand_qty': line.manufacture_demand_qty,
+                    'available_qty': available_qty,
+                    'shortage_qty': shortage_qty,
+                    'source_type': 'mo',
+                    'related_line_ids': [(6, 0, source_ids)],
+                })
+
+            if line.procurement_demand_qty > 0:
+                on_hand = product.with_company(self.company_id).qty_available
+                available_qty = on_hand
+                shortage_qty = max(line.procurement_demand_qty - available_qty, 0.0)
+                self.env['planning.batch.shortage'].create({
+                    'batch_id': self.id,
+                    'product_id': product.id,
+                    'uom_id': product.uom_id.id,
+                    'demand_qty': line.procurement_demand_qty,
+                    'available_qty': available_qty,
+                    'shortage_qty': shortage_qty,
+                    'source_type': 'po',
+                    'related_line_ids': [(6, 0, source_ids)],
+                })
+
         self.shortage_last_run = fields.Datetime.now()
         self.shortage_last_run_by = self.env.user
         self.status = 'shortage_analyzed'
@@ -379,13 +652,10 @@ class PlanningBatch(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('Shortage analysis completed'),
-                'message': _('Shortage table updated.'),
+                'message': _('Shortage table updated from multi-level demand.'),
                 'type': 'success',
                 'sticky': False,
-                'next': {
-                    'type': 'ir.actions.client',
-                    'tag': 'soft_reload',
-                },
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             }
         }
 
@@ -393,9 +663,9 @@ class PlanningBatch(models.Model):
         self.ensure_one()
         if self.status != 'shortage_analyzed':
             raise UserError(_('Create MOs is only available after Shortage Analysis.'))
-        shortage_lines = self.shortage_line_ids.filtered(lambda l: l.shortage_qty > 0)
+        shortage_lines = self.shortage_line_ids.filtered(lambda l: l.source_type == 'mo' and l.shortage_qty > 0)
         if not shortage_lines:
-            raise UserError(_('No shortages to create Manufacturing Orders.'))
+            raise UserError(_('No manufacturing shortages to create Manufacturing Orders.'))
 
         existing_products = self.mrp_production_ids.mapped('product_id')
         duplicated = shortage_lines.mapped('product_id') & existing_products
@@ -420,32 +690,28 @@ class PlanningBatch(models.Model):
                 'product_qty': qty,
                 'product_uom_id': product.uom_id.id,
                 'bom_id': bom.id,
-                'origin': self.name,
+                'origin': f"FP:{self.name}",
             }
-            mo = self.env['mrp.production'].create(mo_vals)
-            created_mos |= mo
+            created_mos |= self.env['mrp.production'].create(mo_vals)
 
-        if created_mos:
-            self.mrp_production_ids = [(4, mo.id) for mo in created_mos]
-            self.suggested_mo_created_at = fields.Datetime.now()
-            self.suggested_mo_created_by = self.env.user
-            self.status = 'calculated'
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _('MOs created'),
-                    'message': _('Manufacturing Orders created for shortages.'),
-                    'type': 'success',
-                    'sticky': False,
-                    'next': {
-                        'type': 'ir.actions.client',
-                        'tag': 'soft_reload',
-                    },
-                }
-            }
-        else:
+        if not created_mos:
             raise UserError(_('No Manufacturing Orders were created.'))
+
+        self.mrp_production_ids = [(4, mo.id) for mo in created_mos]
+        self.suggested_mo_created_at = fields.Datetime.now()
+        self.suggested_mo_created_by = self.env.user
+        self.status = 'calculated'
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('MOs created'),
+                'message': _('Manufacturing Orders created for calculated shortages.'),
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            }
+        }
 
     def action_undo_created_mo(self):
         self.ensure_one()
@@ -479,22 +745,10 @@ class PlanningBatch(models.Model):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                    'title': _('MOs removed'),
-                    'message': _('Draft Manufacturing Orders created by this batch were removed.'),
-                    'type': 'warning',
-                    'sticky': False,
-                    'next': {
-                        'type': 'ir.actions.client',
-                        'tag': 'soft_reload',
-                    },
-                }
+                'title': _('MOs removed'),
+                'message': _('Draft Manufacturing Orders created by this batch were removed.'),
+                'type': 'warning',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             }
-
-    def _get_bom_map(self, products):
-        if not products:
-            return {}
-        bom_map = self.env['mrp.bom']._bom_find(
-            products,
-            company_id=self.company_id.id,
-        )
-        return bom_map
+        }

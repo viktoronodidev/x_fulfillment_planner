@@ -1,5 +1,5 @@
-Current status (v0.5.08) – Validation revamp (batch + SO locking)
-Release date: 2026-02-16
+Current status (v0.6.00) – Multi-level BOM structure analysis
+Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
 - Shortage analysis (v0.4.01+):
@@ -41,6 +41,20 @@ Implemented in Odoo 17 Community:
   - Fulfillment Planner set as default home action on login (internal users + default user template)
   - Discuss app root menu is hidden
   - Dashboards entry added into Fulfillment Planner app navigation
+- v0.6 additions:
+  - Analyze Structure action: multi-level BOM explosion from selected SO lines
+  - New persisted models:
+    - `planning.batch.explosion.node` (tree nodes with level, parent, type, source, state)
+    - `planning.batch.demand.summary` (aggregated manufacture/procurement demand by product)
+  - New Explosion tab:
+    - structure run metadata
+    - explosion line list
+    - demand summary list
+    - full-screen Manufacturing Chain view action
+  - Shortage analysis now uses exploded multi-level demand
+    - source_type `mo` for manufacturable demand
+    - source_type `po` for procurement input demand
+  - Create MOs now creates MOs for manufacturable shortages from exploded structure
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
@@ -197,13 +211,12 @@ Definition of Done (v0.4):
 •	Készletváltozásra nincs „csendes” rossz eredmény (jelez vagy újraszámol).
 ________________________________________
 Roadmap (overridden – current plan)
-v0.5 – Polishing + UI revamp (“One app” title: all relevant modules in one app)
-• Validation revamp (details later)
-v0.6 – Purchase Order & PO line shortage from aggregation
-• Demand source: batch-created MOs only (scope-limited)
-• Same behavior as MOs, but demand comes from MOs created, not Sales Orders
-v0.7 – Multi BOM logic
-v0.8 – Polishing + validation revamp
+v0.6 – Multi-level BOM structure analysis + semi-goods demand expansion
+v0.7 – Procurement Planner MVP
+• Demand source: exploded manufacturing demand
+• Netting with minimum stock target
+v0.8 – Procurement Planner Full
+• lead time, MOQ/multiples, vendor policy, advanced validations
 v0.9 – UI revamp + polishing
 v1.0 – Full automation + control points
 • Planner ready: minimal user action for daily fulfillment

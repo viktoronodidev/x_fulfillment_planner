@@ -7,4 +7,6 @@ from . import planning_batch_select_so_product
 from . import planning_batch_shortage
 from . import planning_batch_product_summary
 from . import planning_batch_bom_issue
+from . import planning_batch_explosion_node
+from . import planning_batch_demand_summary
 from . import sale_order
