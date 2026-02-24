@@ -222,3 +222,8 @@
 .fp_form .o_field_widget[name="demand_summary_ids"] .o_list_renderer tbody tr:nth-child(odd) {
     background: #fcfcfd;
 }
+
+.fp_chain_tree .o_list_record_selector,
+.fp_chain_tree th.o_list_record_selector {
+    display: none !important;
+}

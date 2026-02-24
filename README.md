@@ -1,4 +1,4 @@
-Current status (v0.6.03) – Multi-level BOM structure analysis
+Current status (v0.6.04) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -53,6 +53,8 @@ Implemented in Odoo 17 Community:
     - full-screen Manufacturing Chain view action
     - read-only chain browsing with drill-down to child nodes
     - improved visual separation (root-only table focus, badges, and section containers)
+    - manufacturing chain list now shows all levels grouped by level-0 product with aggregated demand lines
+    - dedicated read-only chain report model (`planning.batch.chain.line`) with level/type/status badges
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand

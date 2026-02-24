@@ -570,6 +570,53 @@
         </field>
     </record>
 
+    <record id="view_planning_batch_chain_line_tree" model="ir.ui.view">
+        <field name="name">planning.batch.chain.line.tree</field>
+        <field name="model">planning.batch.chain.line</field>
+        <field name="arch" type="xml">
+            <tree class="fp_chain_tree" default_order="root_product_id, level, product_id"
+                  create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                  decoration-primary="level == 0"
+                  decoration-info="level == 1"
+                  decoration-muted="level &gt;= 2"
+                  decoration-danger="state in ['cycle', 'missing_bom']"
+                  decoration-warning="state == 'excluded'">
+                <field name="root_product_id" string="Level 0 Product"/>
+                <field name="level"/>
+                <field name="product_id"/>
+                <field name="demand_qty"/>
+                <field name="uom_id"/>
+                <field name="item_type" widget="badge"/>
+                <field name="supply_type" widget="badge"/>
+                <field name="state" widget="badge"/>
+                <field name="message"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_planning_batch_chain_line_form" model="ir.ui.view">
+        <field name="name">planning.batch.chain.line.form</field>
+        <field name="model">planning.batch.chain.line</field>
+        <field name="arch" type="xml">
+            <form string="Manufacturing Chain Line" create="0" edit="0" delete="0">
+                <group>
+                    <field name="batch_id" readonly="1"/>
+                    <field name="root_product_id" readonly="1"/>
+                    <field name="level" readonly="1"/>
+                </group>
+                <group>
+                    <field name="product_id" readonly="1"/>
+                    <field name="demand_qty" readonly="1"/>
+                    <field name="uom_id" readonly="1"/>
+                    <field name="item_type" readonly="1"/>
+                    <field name="supply_type" readonly="1"/>
+                    <field name="state" readonly="1"/>
+                    <field name="message" readonly="1"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
     <record id="view_planning_batch_select_so_form" model="ir.ui.view">
         <field name="name">planning.batch.select.so.form</field>
         <field name="model">planning.batch.select.so</field>

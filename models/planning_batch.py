@@ -119,6 +119,12 @@ class PlanningBatch(models.Model):
         string='Explosion Nodes',
         readonly=True,
     )
+    chain_line_ids = fields.One2many(
+        comodel_name='planning.batch.chain.line',
+        inverse_name='batch_id',
+        string='Manufacturing Chain Lines',
+        readonly=True,
+    )
     explosion_root_node_ids = fields.One2many(
         comodel_name='planning.batch.explosion.node',
         inverse_name='batch_id',
@@ -263,16 +269,17 @@ class PlanningBatch(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': _('Manufacturing Chain'),
-            'res_model': 'planning.batch.explosion.node',
-            'view_mode': 'tree,form',
+            'res_model': 'planning.batch.chain.line',
+            'view_mode': 'tree',
             'views': [
-                (self.env.ref('x_fulfillment_planner.view_planning_batch_explosion_node_tree').id, 'tree'),
-                (self.env.ref('x_fulfillment_planner.view_planning_batch_explosion_node_form').id, 'form'),
+                (self.env.ref('x_fulfillment_planner.view_planning_batch_chain_line_tree').id, 'tree'),
             ],
             'target': 'current',
-            # Start from level 0 only; users can drill down into children from node form.
-            'domain': [('batch_id', '=', self.id), ('parent_id', '=', False)],
-            'context': {'default_batch_id': self.id, 'search_default_batch_id': self.id},
+            'domain': [('batch_id', '=', self.id)],
+            'context': {
+                'default_batch_id': self.id,
+                'search_default_batch_id': self.id,
+            },
         }
 
     @api.depends('shortage_line_ids')
@@ -367,6 +374,7 @@ class PlanningBatch(models.Model):
 
     def _clear_explosion_data(self):
         self.explosion_node_ids.unlink()
+        self.chain_line_ids.unlink()
         self.demand_summary_ids.unlink()
         self.explosion_last_run = False
         self.explosion_last_run_by = False
@@ -418,6 +426,19 @@ class PlanningBatch(models.Model):
         bom_cache = {}
         demand_by_product = defaultdict(lambda: {'manufacture': 0.0, 'procure': 0.0, 'levels': []})
         source_line_ids_by_product = defaultdict(set)
+        chain_aggregate = defaultdict(
+            lambda: {
+                'demand_qty': 0.0,
+                'state': 'ok',
+                'message': False,
+            }
+        )
+        state_priority = {
+            'ok': 0,
+            'excluded': 1,
+            'missing_bom': 2,
+            'cycle': 3,
+        }
 
         def get_bom(product):
             if product.id not in bom_cache:
@@ -431,7 +452,22 @@ class PlanningBatch(models.Model):
             if source_sale_line_id:
                 source_line_ids_by_product[product_id].add(source_sale_line_id)
 
-        def create_node(parent_id, parent_product_id, product, qty, level, path_ids, path_key, source_sale_line_id):
+        def add_chain_line(root_product, product, qty, level, item_type, supply_type, state, message):
+            key = (
+                root_product.id,
+                level,
+                product.id,
+                product.uom_id.id,
+                item_type,
+                supply_type,
+            )
+            line = chain_aggregate[key]
+            line['demand_qty'] += qty
+            if state_priority.get(state, 0) >= state_priority.get(line['state'], 0):
+                line['state'] = state
+                line['message'] = message or line['message']
+
+        def create_node(root_product, parent_id, parent_product_id, product, qty, level, path_ids, path_key, source_sale_line_id):
             if level > max_depth:
                 self.env['planning.batch.explosion.node'].create({
                     'batch_id': self.id,
@@ -449,6 +485,16 @@ class PlanningBatch(models.Model):
                     'state': 'excluded',
                     'message': _('Excluded due to max explosion depth'),
                 })
+                add_chain_line(
+                    root_product=root_product,
+                    product=product,
+                    qty=qty,
+                    level=level,
+                    item_type='raw' if level > 0 else 'finished',
+                    supply_type='procure',
+                    state='excluded',
+                    message=_('Excluded due to max explosion depth'),
+                )
                 add_demand(product.id, 'procure', qty, level, source_sale_line_id)
                 return
 
@@ -475,6 +521,16 @@ class PlanningBatch(models.Model):
                 'message': False,
             })
             add_demand(product.id, supply_type, qty, level, source_sale_line_id)
+            add_chain_line(
+                root_product=root_product,
+                product=product,
+                qty=qty,
+                level=level,
+                item_type='raw' if not bom and level > 0 else item_type,
+                supply_type=supply_type,
+                state='ok',
+                message=False,
+            )
 
             if not bom:
                 return
@@ -511,11 +567,22 @@ class PlanningBatch(models.Model):
                         'state': 'cycle',
                         'message': _('Cycle detected'),
                     })
+                    add_chain_line(
+                        root_product=root_product,
+                        product=component,
+                        qty=required_qty,
+                        level=level + 1,
+                        item_type='raw',
+                        supply_type='procure',
+                        state='cycle',
+                        message=_('Cycle detected'),
+                    )
                     add_demand(component.id, 'procure', required_qty, level + 1, source_sale_line_id)
                     continue
 
                 next_path_ids.append(component.id)
                 create_node(
+                    root_product,
                     node.id,
                     product.id,
                     component,
@@ -531,6 +598,7 @@ class PlanningBatch(models.Model):
             if not product:
                 continue
             create_node(
+                root_product=product,
                 parent_id=False,
                 parent_product_id=False,
                 product=product,
@@ -540,6 +608,22 @@ class PlanningBatch(models.Model):
                 path_key=product.display_name,
                 source_sale_line_id=batch_line.sale_order_line_id.id,
             )
+
+        chain_values = [(5, 0, 0)]
+        for key, values in sorted(chain_aggregate.items(), key=lambda item: item[0]):
+            root_id, level, product_id, uom_id, item_type, supply_type = key
+            chain_values.append((0, 0, {
+                'root_product_id': root_id,
+                'level': level,
+                'product_id': product_id,
+                'demand_qty': values['demand_qty'],
+                'uom_id': uom_id,
+                'item_type': item_type,
+                'supply_type': supply_type,
+                'state': values['state'],
+                'message': values['message'],
+            }))
+        self.chain_line_ids = chain_values
 
         products = self.env['product.product'].browse(list(demand_by_product.keys()))
         for product in products:
