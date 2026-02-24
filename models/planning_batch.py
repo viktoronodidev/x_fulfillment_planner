@@ -963,8 +963,17 @@ class PlanningBatch(models.Model):
             }
         }
 
+    def _try_mark_done(self):
+        self.ensure_one()
+        if self.status != 'confirmed' or not self.mrp_production_ids:
+            return
+        open_mos = self.mrp_production_ids.filtered(lambda mo: mo.state not in ('done', 'cancel'))
+        if not open_mos:
+            self.status = 'done'
+
     def action_check_manufacturing_orders(self):
         self.ensure_one()
+        self._try_mark_done()
         wizard = self.env['planning.batch.mo.check.wizard'].create({
             'batch_id': self.id,
         })

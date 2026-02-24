@@ -250,7 +250,10 @@
                             </div>
                         </page>
                         <page string="Selection">
-                            <group>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--sales fp_badge--center">Sales Orders</span>
+                                </summary>
                                 <field name="batch_order_ids" options="{'no_create': True}">
                                     <tree create="0" edit="0" delete="0">
                                         <button name="action_remove_from_batch" type="object" icon="fa-trash"
@@ -283,8 +286,11 @@
                                         </group>
                                     </form>
                                 </field>
-                            </group>
-                            <group string="Selected Products" class="fp_selected_products_block">
+                            </details>
+                            <details class="fp_section fp_section--selected-products">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--products fp_badge--center">Selected Products</span>
+                                </summary>
                                 <field name="product_summary_ids">
                                     <tree create="0" edit="0" delete="0">
                                         <field name="product_id"/>
@@ -292,15 +298,18 @@
                                         <field name="uom_id"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Need BoM correction">
+                            </details>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Need BoM correction</span>
+                                </summary>
                                 <field name="bom_missing_ids">
                                     <tree create="0" edit="0" delete="0">
                                         <field name="product_id"/>
                                         <field name="uom_id"/>
                                     </tree>
                                 </field>
-                            </group>
+                            </details>
                         </page>
                         <page string="Shortage">
                             <group invisible="1">
@@ -310,11 +319,19 @@
                                 <field name="has_shortage_level3"/>
                                 <field name="has_shortage_level4"/>
                             </group>
-                            <group>
-                                <field name="shortage_last_run" readonly="1"/>
-                                <field name="shortage_last_run_by" readonly="1"/>
-                            </group>
-                            <group string="Level0" modifiers="{'invisible': [('has_shortage_level0', '=', False)]}">
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Analysis Info</span>
+                                </summary>
+                                <div class="fp_block_meta">
+                                    <field name="shortage_last_run" readonly="1"/>
+                                    <field name="shortage_last_run_by" readonly="1"/>
+                                </div>
+                            </details>
+                            <details class="fp_section" modifiers="{'invisible': [('has_shortage_level0', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Level0</span>
+                                </summary>
                                 <field name="shortage_level0_ids">
                                     <tree create="0" edit="0" delete="0"
                                           decoration-danger="shortage_qty &gt; 0"
@@ -327,8 +344,11 @@
                                         <field name="source_type"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level1" modifiers="{'invisible': [('has_shortage_level1', '=', False)]}">
+                            </details>
+                            <details class="fp_section" modifiers="{'invisible': [('has_shortage_level1', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Level1</span>
+                                </summary>
                                 <field name="shortage_level1_ids">
                                     <tree create="0" edit="0" delete="0"
                                           decoration-danger="shortage_qty &gt; 0"
@@ -341,8 +361,11 @@
                                         <field name="source_type"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level2" modifiers="{'invisible': [('has_shortage_level2', '=', False)]}">
+                            </details>
+                            <details class="fp_section" modifiers="{'invisible': [('has_shortage_level2', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Level2</span>
+                                </summary>
                                 <field name="shortage_level2_ids">
                                     <tree create="0" edit="0" delete="0"
                                           decoration-danger="shortage_qty &gt; 0"
@@ -355,8 +378,11 @@
                                         <field name="source_type"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level3" modifiers="{'invisible': [('has_shortage_level3', '=', False)]}">
+                            </details>
+                            <details class="fp_section" modifiers="{'invisible': [('has_shortage_level3', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Level3</span>
+                                </summary>
                                 <field name="shortage_level3_ids">
                                     <tree create="0" edit="0" delete="0"
                                           decoration-danger="shortage_qty &gt; 0"
@@ -369,8 +395,11 @@
                                         <field name="source_type"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level4" modifiers="{'invisible': [('has_shortage_level4', '=', False)]}">
+                            </details>
+                            <details class="fp_section" modifiers="{'invisible': [('has_shortage_level4', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--shortage fp_badge--center">Level4</span>
+                                </summary>
                                 <field name="shortage_level4_ids">
                                     <tree create="0" edit="0" delete="0"
                                           decoration-danger="shortage_qty &gt; 0"
@@ -383,13 +412,16 @@
                                         <field name="source_type"/>
                                     </tree>
                                 </field>
-                            </group>
+                            </details>
                         </page>
                         <page string="Explosion">
-                            <group>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Actions</span>
+                                </summary>
                                 <button name="action_open_manufacturing_chain" type="object" string="Open Manufacturing Chain"
                                         class="btn-secondary"/>
-                            </group>
+                            </details>
                             <group invisible="1">
                                 <field name="has_explosion_level0"/>
                                 <field name="has_explosion_level1"/>
@@ -397,16 +429,22 @@
                                 <field name="has_explosion_level3"/>
                                 <field name="has_explosion_level4"/>
                             </group>
-                            <group>
-                                <field name="explosion_last_run" readonly="1"/>
-                                <field name="explosion_last_run_by" readonly="1"/>
-                            </group>
-                            <group>
-                                <field name="semi_product_count" readonly="1"/>
-                                <field name="raw_product_count" readonly="1"/>
-                                <field name="explosion_issue_count" readonly="1"/>
-                            </group>
-                            <group string="Level0" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level0', '=', False)]}">
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Structure Info</span>
+                                </summary>
+                                <div class="fp_block_meta">
+                                    <field name="explosion_last_run" readonly="1"/>
+                                    <field name="explosion_last_run_by" readonly="1"/>
+                                    <field name="semi_product_count" readonly="1"/>
+                                    <field name="raw_product_count" readonly="1"/>
+                                    <field name="explosion_issue_count" readonly="1"/>
+                                </div>
+                            </details>
+                            <details class="fp_section fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level0', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Level0</span>
+                                </summary>
                                 <field name="explosion_level0_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="state in ['cycle', 'missing_bom']"
@@ -424,8 +462,11 @@
                                         <field name="message"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level1" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level1', '=', False)]}">
+                            </details>
+                            <details class="fp_section fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level1', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Level1</span>
+                                </summary>
                                 <field name="explosion_level1_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="state in ['cycle', 'missing_bom']"
@@ -442,8 +483,11 @@
                                         <field name="message"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level2" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level2', '=', False)]}">
+                            </details>
+                            <details class="fp_section fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level2', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Level2</span>
+                                </summary>
                                 <field name="explosion_level2_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="state in ['cycle', 'missing_bom']"
@@ -460,8 +504,11 @@
                                         <field name="message"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level3" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level3', '=', False)]}">
+                            </details>
+                            <details class="fp_section fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level3', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Level3</span>
+                                </summary>
                                 <field name="explosion_level3_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="state in ['cycle', 'missing_bom']"
@@ -478,8 +525,11 @@
                                         <field name="message"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Level4" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level4', '=', False)]}">
+                            </details>
+                            <details class="fp_section fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level4', '=', False)]}">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Level4</span>
+                                </summary>
                                 <field name="explosion_level4_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="state in ['cycle', 'missing_bom']"
@@ -496,8 +546,11 @@
                                         <field name="message"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group string="Demand Summary" class="fp_explosion_summary_group">
+                            </details>
+                            <details class="fp_section fp_explosion_summary_group">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--procurement fp_badge--center">Demand Summary</span>
+                                </summary>
                                 <field name="demand_summary_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="uncovered_qty &gt; 0">
@@ -513,14 +566,22 @@
                                         <field name="has_bom"/>
                                     </tree>
                                 </field>
-                            </group>
+                            </details>
                         </page>
                         <page string="Manufacture">
-                            <group>
-                                <field name="suggested_mo_created_at" readonly="1"/>
-                                <field name="suggested_mo_created_by" readonly="1"/>
-                            </group>
-                            <group>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">MO Meta</span>
+                                </summary>
+                                <div class="fp_block_meta">
+                                    <field name="suggested_mo_created_at" readonly="1"/>
+                                    <field name="suggested_mo_created_by" readonly="1"/>
+                                </div>
+                            </details>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">Manufacturing Orders</span>
+                                </summary>
                                 <field name="mrp_production_ids" readonly="1">
                                     <tree create="0" edit="0" delete="0" default_order="date_start desc">
                                         <field name="name"/>
@@ -531,8 +592,11 @@
                                         <field name="state"/>
                                     </tree>
                                 </field>
-                            </group>
-                            <group>
+                            </details>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--manufacture fp_badge--center">MO Lines</span>
+                                </summary>
                                 <field name="mo_line_ids" readonly="1">
                                     <tree create="0" edit="0" delete="0">
                                         <field name="raw_material_production_id"/>
@@ -542,13 +606,15 @@
                                         <field name="state"/>
                                     </tree>
                                 </field>
-                            </group>
+                            </details>
                         </page>
                         <page string="Procurement">
-                            <group>
-                                <div class="fp_badge fp_badge--procurement fp_badge--center">Procurement</div>
+                            <details class="fp_section">
+                                <summary class="fp_section_summary">
+                                    <span class="fp_badge fp_badge--procurement fp_badge--center">Procurement</span>
+                                </summary>
                                 <div class="fp_muted">Planned for v0.5+</div>
-                            </group>
+                            </details>
                         </page>
                         <page string="Workflow overview">
                             <group>
