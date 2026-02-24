@@ -1,4 +1,4 @@
-Current status (v0.6.05) – Multi-level BOM structure analysis
+Current status (v0.6.06) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -62,6 +62,8 @@ Implemented in Odoo 17 Community:
   - Batch workflow controls:
     - in `calculated`: `Revert to Draft` + `Confirm All MOs`
     - in `confirmed`: `Check Manufacturing Orders` popup with Open / Closed / Canceled sections
+  - Odoo 17 view syntax update:
+    - header button visibility moved from legacy `modifiers` to `invisible=\"...\"` expressions
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
