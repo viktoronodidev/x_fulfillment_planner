@@ -201,3 +201,24 @@
     white-space: normal;
     word-break: break-word;
 }
+
+.fp_form .fp_explosion_nodes_group,
+.fp_form .fp_explosion_summary_group {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.fp_form .o_field_widget[name="explosion_root_node_ids"] .o_list_renderer thead {
+    background: #f8fafc;
+}
+
+.fp_form .o_field_widget[name="demand_summary_ids"] .o_list_renderer thead {
+    background: #f9fafb;
+}
+
+.fp_form .o_field_widget[name="explosion_root_node_ids"] .o_list_renderer tbody tr:nth-child(odd),
+.fp_form .o_field_widget[name="demand_summary_ids"] .o_list_renderer tbody tr:nth-child(odd) {
+    background: #fcfcfd;
+}

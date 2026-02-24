@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class PlanningBatchExplosionNode(models.Model):
@@ -116,6 +116,11 @@ class PlanningBatchExplosionNode(models.Model):
         string='Message',
         readonly=True,
     )
+    child_count = fields.Integer(
+        string='Children',
+        compute='_compute_child_count',
+        store=True,
+    )
 
     def _compute_name(self):
         for node in self:
@@ -123,3 +128,8 @@ class PlanningBatchExplosionNode(models.Model):
                 node.name = f"{node.product_id.display_name} ({node.demand_qty:.4f} {node.uom_id.name})"
             else:
                 node.name = 'Node'
+
+    @api.depends('child_ids')
+    def _compute_child_count(self):
+        for node in self:
+            node.child_count = len(node.child_ids)

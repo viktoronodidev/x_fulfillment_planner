@@ -348,25 +348,32 @@
                                 <field name="explosion_last_run" readonly="1"/>
                                 <field name="explosion_last_run_by" readonly="1"/>
                             </group>
-                            <group string="Explosion Nodes">
-                                <field name="explosion_node_ids" domain="[('parent_id', '=', False)]">
-                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0">
-                                        <field name="level"/>
-                                        <field name="parent_product_id"/>
+                            <group>
+                                <field name="semi_product_count" readonly="1"/>
+                                <field name="raw_product_count" readonly="1"/>
+                                <field name="explosion_issue_count" readonly="1"/>
+                            </group>
+                            <group string="Explosion Nodes" class="fp_explosion_nodes_group">
+                                <field name="explosion_root_node_ids">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="state in ['cycle', 'missing_bom']"
+                                          decoration-warning="state == 'excluded'">
                                         <field name="product_id"/>
                                         <field name="demand_qty"/>
                                         <field name="uom_id"/>
-                                        <field name="item_type"/>
-                                        <field name="supply_type"/>
+                                        <field name="item_type" widget="badge"/>
+                                        <field name="supply_type" widget="badge"/>
                                         <field name="bom_id"/>
-                                        <field name="state"/>
+                                        <field name="child_count"/>
+                                        <field name="state" widget="badge"/>
                                         <field name="message"/>
                                     </tree>
                                 </field>
                             </group>
-                            <group string="Demand Summary">
+                            <group string="Demand Summary" class="fp_explosion_summary_group">
                                 <field name="demand_summary_ids">
-                                    <tree create="0" edit="0" delete="0">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="uncovered_qty &gt; 0">
                                         <field name="product_id"/>
                                         <field name="manufacture_demand_qty"/>
                                         <field name="procurement_demand_qty"/>
@@ -547,18 +554,18 @@
                 </group>
                 <group string="Child Nodes">
                     <field name="child_ids" readonly="1" context="{'default_batch_id': batch_id}">
-                        <tree create="0" edit="0" delete="0" import="0" export_xlsx="0">
-                            <field name="level"/>
-                            <field name="product_id"/>
-                            <field name="demand_qty"/>
-                            <field name="uom_id"/>
-                            <field name="item_type"/>
-                            <field name="supply_type"/>
-                            <field name="state"/>
-                            <field name="message"/>
-                        </tree>
-                    </field>
-                </group>
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0">
+                                        <field name="level"/>
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="item_type" widget="badge"/>
+                                        <field name="supply_type" widget="badge"/>
+                                        <field name="state" widget="badge"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
+                            </group>
             </form>
         </field>
     </record>

@@ -119,6 +119,12 @@ class PlanningBatch(models.Model):
         string='Explosion Nodes',
         readonly=True,
     )
+    explosion_root_node_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        inverse_name='batch_id',
+        string='Root Explosion Nodes',
+        compute='_compute_explosion_root_node_ids',
+    )
     demand_summary_ids = fields.One2many(
         comodel_name='planning.batch.demand.summary',
         inverse_name='batch_id',
@@ -330,6 +336,11 @@ class PlanningBatch(models.Model):
             batch.semi_product_count = len(nodes.filtered(lambda n: n.item_type == 'semi').mapped('product_id'))
             batch.raw_product_count = len(nodes.filtered(lambda n: n.item_type == 'raw').mapped('product_id'))
             batch.explosion_issue_count = len(nodes.filtered(lambda n: n.state in ('cycle', 'missing_bom', 'excluded')))
+
+    @api.depends('explosion_node_ids.parent_id')
+    def _compute_explosion_root_node_ids(self):
+        for batch in self:
+            batch.explosion_root_node_ids = batch.explosion_node_ids.filtered(lambda n: not n.parent_id)
 
     @api.depends('line_ids', 'line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
