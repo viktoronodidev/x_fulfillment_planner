@@ -1,0 +1,527 @@
+<odoo>
+    <record id="view_planning_batch_tree" model="ir.ui.view">
+        <field name="name">planning.batch.tree</field>
+        <field name="model">planning.batch</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_planning_batch_form" model="ir.ui.view">
+        <field name="name">planning.batch.form</field>
+        <field name="model">planning.batch</field>
+        <field name="arch" type="xml">
+            <form string="Planning Batch" class="fp_form">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,shortage_analyzed,calculated,confirmed,done"/>
+                    <button name="action_open_select_sales_orders" type="object" string="Select Sales Orders"
+                            class="btn-primary" modifiers="{'invisible': [('status', '!=', 'draft')]}"/>
+                    <button name="action_analyze_shortage" type="object" string="Analyze Shortage"
+                            class="btn-secondary" modifiers="{'invisible': [('status', 'not in', ['draft', 'shortage_analyzed'])]}"/>
+                    <button name="action_create_suggested_mo" type="object" string="Create MOs"
+                            class="btn-secondary"
+                            modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', '!=', 'shortage_analyzed')]}"/>
+                </header>
+                <sheet class="fp_sheet fp_sheet--full">
+                    <group>
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="company_id"/>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                    <notebook>
+                        <page string="Dashboard">
+                            <div class="fp_dashboard fp_dashboard--single">
+                                <div class="fp_kpi_bar">
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Sales Orders Included</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="sales_order_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Products Included</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="product_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Products without BOM</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="bom_missing_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">MO Coverage %</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="mo_coverage_pct" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Uncovered Demand Qty</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="uncovered_demand_qty" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Shortage Count</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="shortage_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Shortage Qty</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="shortage_qty_total" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">MOs Created</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="mo_created_count" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">Last Analyzed</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="shortage_last_run" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <details class="fp_section fp_section--selection" open="open">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--sales fp_badge--center">Sales Orders</span>
+                                    </summary>
+                                    <field name="batch_order_ids" options="{'no_create': True}">
+                                        <tree create="0" edit="0" delete="0">
+                                            <button name="action_remove_from_batch" type="object" icon="fa-trash"
+                                                    string="" class="btn-link"/>
+                                            <field name="sale_order_id"/>
+                                            <field name="partner_id"/>
+                                            <field name="date_order"/>
+                                            <field name="state"/>
+                                            <field name="amount_total"/>
+                                        </tree>
+                                        <form string="Sales Order">
+                                            <group>
+                                                <field name="sale_order_id" readonly="1"/>
+                                                <field name="partner_id" readonly="1"/>
+                                                <field name="date_order" readonly="1"/>
+                                                <field name="state" readonly="1"/>
+                                                <field name="amount_total" readonly="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="batch_line_ids">
+                                                    <tree create="0" edit="0" delete="1">
+                                                        <field name="selected"/>
+                                                        <field name="product_id"/>
+                                                        <field name="product_uom_qty"/>
+                                                        <field name="product_uom"/>
+                                                        <field name="status"/>
+                                                        <field name="message"/>
+                                                    </tree>
+                                                </field>
+                                            </group>
+                                        </form>
+                                    </field>
+                                </details>
+                                <details class="fp_section fp_section--selected-products">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--products fp_badge--center">Selected Products</span>
+                                    </summary>
+                                    <field name="product_summary_ids">
+                                        <tree create="0" edit="0" delete="0">
+                                            <field name="product_id"/>
+                                            <field name="qty"/>
+                                            <field name="uom_id"/>
+                                        </tree>
+                                    </field>
+                                </details>
+                                <details class="fp_section fp_section--shortage">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--shortage fp_badge--center">Shortage</span>
+                                    </summary>
+                                    <div class="fp_block_meta">
+                                        <field name="shortage_last_run" readonly="1"/>
+                                        <field name="shortage_last_run_by" readonly="1"/>
+                                    </div>
+                                    <field name="shortage_line_ids">
+                                        <tree create="0" edit="0" delete="0"
+                                              decoration-danger="shortage_qty &gt; 0"
+                                              decoration-success="shortage_qty &lt;= 0">
+                                            <field name="product_id"/>
+                                            <field name="demand_qty"/>
+                                            <field name="available_qty"/>
+                                            <field name="shortage_qty"/>
+                                            <field name="uom_id"/>
+                                            <field name="source_type"/>
+                                        </tree>
+                                        <form string="Shortage">
+                                            <group>
+                                                <field name="product_id" readonly="1"/>
+                                                <field name="uom_id" readonly="1"/>
+                                                <field name="demand_qty" readonly="1"/>
+                                                <field name="available_qty" readonly="1"/>
+                                                <field name="shortage_qty" readonly="1"/>
+                                                <field name="source_type" readonly="1"/>
+                                            </group>
+                                            <group string="Related Sales Order Lines">
+                                                <field name="related_line_ids">
+                                                    <tree create="0" edit="0" delete="0">
+                                                        <field name="order_id"/>
+                                                        <field name="product_id"/>
+                                                        <field name="product_uom_qty"/>
+                                                        <field name="product_uom"/>
+                                                        <field name="price_subtotal"/>
+                                                    </tree>
+                                                </field>
+                                            </group>
+                                        </form>
+                                    </field>
+                                </details>
+                                <details class="fp_section">
+                                    <summary class="fp_section_summary">
+                                        <span class="fp_badge fp_badge--manufacture fp_badge--center">Manufacture</span>
+                                    </summary>
+                                    <div class="fp_section_actions">
+                                        <button name="action_undo_created_mo" type="object" string="Undo MOs"
+                                                class="btn-secondary"/>
+                                    </div>
+                                    <div class="fp_block_meta">
+                                        <field name="suggested_mo_created_at" readonly="1"/>
+                                        <field name="suggested_mo_created_by" readonly="1"/>
+                                    </div>
+                                    <field name="mrp_production_ids" readonly="1">
+                                        <tree create="0" edit="0" delete="0" default_order="date_start desc">
+                                            <field name="name"/>
+                                            <field name="product_id"/>
+                                            <field name="product_qty"/>
+                                            <field name="origin" string="Origin"/>
+                                            <field name="date_start"/>
+                                            <field name="state"/>
+                                        </tree>
+                                    </field>
+                                    <field name="mo_line_ids" readonly="1">
+                                        <tree create="0" edit="0" delete="0">
+                                            <field name="raw_material_production_id"/>
+                                            <field name="product_id"/>
+                                            <field name="product_uom_qty"/>
+                                            <field name="product_uom"/>
+                                            <field name="state"/>
+                                        </tree>
+                                    </field>
+                                </details>
+                            </div>
+                        </page>
+                        <page string="Selection">
+                            <group>
+                                <field name="batch_order_ids" options="{'no_create': True}">
+                                    <tree create="0" edit="0" delete="0">
+                                        <button name="action_remove_from_batch" type="object" icon="fa-trash"
+                                                string="" class="btn-link"/>
+                                        <field name="sale_order_id"/>
+                                        <field name="partner_id"/>
+                                        <field name="date_order"/>
+                                        <field name="state"/>
+                                        <field name="amount_total"/>
+                                    </tree>
+                                    <form string="Sales Order">
+                                        <group>
+                                            <field name="sale_order_id" readonly="1"/>
+                                            <field name="partner_id" readonly="1"/>
+                                            <field name="date_order" readonly="1"/>
+                                            <field name="state" readonly="1"/>
+                                            <field name="amount_total" readonly="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="batch_line_ids">
+                                                <tree create="0" edit="0" delete="1">
+                                                    <field name="selected"/>
+                                                    <field name="product_id"/>
+                                                    <field name="product_uom_qty"/>
+                                                    <field name="product_uom"/>
+                                                    <field name="status"/>
+                                                    <field name="message"/>
+                                                </tree>
+                                            </field>
+                                        </group>
+                                    </form>
+                                </field>
+                            </group>
+                            <group string="Selected Products" class="fp_selected_products_block">
+                                <field name="product_summary_ids">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="product_id"/>
+                                        <field name="qty"/>
+                                        <field name="uom_id"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Need BoM correction">
+                                <field name="bom_missing_ids">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="product_id"/>
+                                        <field name="uom_id"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Shortage">
+                            <group>
+                                <field name="shortage_last_run" readonly="1"/>
+                                <field name="shortage_last_run_by" readonly="1"/>
+                            </group>
+                            <field name="shortage_line_ids">
+                                <tree create="0" edit="0" delete="0"
+                                      decoration-danger="shortage_qty &gt; 0"
+                                      decoration-success="shortage_qty &lt;= 0">
+                                    <field name="product_id"/>
+                                    <field name="demand_qty"/>
+                                    <field name="available_qty"/>
+                                    <field name="shortage_qty"/>
+                                    <field name="uom_id"/>
+                                    <field name="source_type"/>
+                                </tree>
+                                <form string="Shortage">
+                                    <group>
+                                        <field name="product_id" readonly="1"/>
+                                        <field name="uom_id" readonly="1"/>
+                                        <field name="demand_qty" readonly="1"/>
+                                        <field name="available_qty" readonly="1"/>
+                                        <field name="shortage_qty" readonly="1"/>
+                                        <field name="source_type" readonly="1"/>
+                                    </group>
+                                    <group string="Related Sales Order Lines">
+                                        <field name="related_line_ids">
+                                            <tree create="0" edit="0" delete="0">
+                                                <field name="order_id"/>
+                                                <field name="product_id"/>
+                                                <field name="product_uom_qty"/>
+                                                <field name="product_uom"/>
+                                                <field name="price_subtotal"/>
+                                            </tree>
+                                        </field>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Manufacture">
+                            <group>
+                                <button name="action_undo_created_mo" type="object" string="Undo MOs"
+                                        class="btn-secondary"/>
+                            </group>
+                            <group>
+                                <field name="suggested_mo_created_at" readonly="1"/>
+                                <field name="suggested_mo_created_by" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="mrp_production_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_start desc">
+                                        <field name="name"/>
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="origin" string="Origin"/>
+                                        <field name="date_start"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="mo_line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="raw_material_production_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Procurement">
+                            <group>
+                                <div class="fp_badge fp_badge--procurement fp_badge--center">Procurement</div>
+                                <div class="fp_muted">Planned for v0.5+</div>
+                            </group>
+                        </page>
+                        <page string="Workflow overview">
+                            <group>
+                                <field name="sale_order_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_order desc">
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="date_order"/>
+                                        <field name="state"/>
+                                        <field name="amount_total"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="sale_order_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="status"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="mrp_production_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_start desc">
+                                        <field name="name"/>
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="origin" string="Origin"/>
+                                        <field name="date_start"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="mo_line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="raw_material_production_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="purchase_order_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0" default_order="date_order desc">
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="date_order"/>
+                                        <field name="state"/>
+                                        <field name="amount_total"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="purchase_order_line_ids" readonly="1">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="order_id"/>
+                                        <field name="product_id"/>
+                                        <field name="product_qty"/>
+                                        <field name="product_uom"/>
+                                        <field name="price_subtotal"/>
+                                        <field name="date_planned"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_planning_batch" model="ir.actions.act_window">
+        <field name="name">Planning Batches</field>
+        <field name="res_model">planning.batch</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_planning_batch_select_so_form" model="ir.ui.view">
+        <field name="name">planning.batch.select.so.form</field>
+        <field name="model">planning.batch.select.so</field>
+        <field name="arch" type="xml">
+            <form string="Select Sales Orders" class="fp_select_so">
+                <group class="fp_select_so_search" col="1">
+                    <field name="search_text" placeholder="Search by Order or Customer"/>
+                    <button name="action_search" type="object" string="Search" class="btn-secondary"/>
+                </group>
+                <group class="fp_select_section" col="1">
+                    <field name="line_ids" nolabel="1" string="">
+                        <tree create="0" edit="0" delete="0" default_order="date_order desc">
+                            <button name="action_select" type="object" string="Select" class="btn-secondary"/>
+                            <button name="action_deselect" type="object" string="Deselect" class="btn-secondary"/>
+                            <field name="selection_state" widget="badge" class="fp_selection_status"
+                                   decoration-success="selection_state == 'selected'"
+                                   decoration-danger="selection_state == 'not_selected'"/>
+                            <field name="sale_order_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="date_order" readonly="1"/>
+                            <field name="amount_total" readonly="1"/>
+                            <field name="state" readonly="1"/>
+                        </tree>
+                        <form string="Sales Order" create="0" edit="0" delete="0">
+                            <group>
+                                <field name="sale_order_id" readonly="1"/>
+                            </group>
+                            <group string="Sales Order Lines">
+                                <field name="sale_order_line_ids">
+                                    <tree create="0" edit="0" delete="0">
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="product_uom"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </form>
+                    </field>
+                </group>
+                <group class="fp_select_section fp_select_section--included" col="1" modifiers="{'invisible': [('has_product_summary', '=', False)]}">
+                    <field name="product_line_ids" nolabel="1" string="">
+                        <tree create="0" edit="0" delete="0">
+                            <field name="product_id"/>
+                            <field name="qty"/>
+                            <field name="product_uom_id"/>
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button name="action_select_all" type="object" string="Select All" class="btn-secondary"/>
+                    <button name="action_deselect_all" type="object" string="Deselect All" class="btn-secondary"/>
+                    <button name="action_apply" type="object" string="Load Sales Orders" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="menu_fulfillment_planner_root" name="Fulfillment Planner" sequence="10"/>
+
+    <menuitem id="menu_fp_planner_root" name="Planner" parent="menu_fulfillment_planner_root" sequence="5"/>
+    <menuitem id="menu_planning_batch" name="Planning Batches" parent="menu_fp_planner_root" action="action_planning_batch" sequence="10"/>
+
+    <menuitem id="menu_fp_sales_root" name="Sales" parent="menu_fulfillment_planner_root" sequence="10"/>
+    <menuitem id="menu_fp_sales_orders" name="Orders" parent="menu_fp_sales_root" action="sale.action_orders" sequence="10"/>
+    <menuitem id="menu_fp_sales_to_invoice" name="To Invoice" parent="menu_fp_sales_root" action="sale.action_orders_to_invoice" sequence="20"/>
+    <menuitem id="menu_fp_sales_products" name="Products" parent="menu_fp_sales_root" action="product.product_template_action" sequence="30"/>
+    <menuitem id="menu_fp_sales_customers" name="Customers" parent="menu_fp_sales_root" action="account.res_partner_action_customer" sequence="35"/>
+    <menuitem id="menu_fp_sales_reporting" name="Reporting" parent="menu_fp_sales_root" action="sale.action_order_report_all" sequence="40"/>
+
+    <menuitem id="menu_fp_mrp_root" name="Manufacturing" parent="menu_fulfillment_planner_root" sequence="20"/>
+    <menuitem id="menu_fp_mrp_orders" name="Manufacturing Orders" parent="menu_fp_mrp_root" action="mrp.mrp_production_action" sequence="10"/>
+    <menuitem id="menu_fp_mrp_bom" name="Bills of Materials" parent="menu_fp_mrp_root" action="mrp.mrp_bom_form_action" sequence="20"/>
+    <menuitem id="menu_fp_mrp_reporting" name="Reporting" parent="menu_fp_mrp_root" action="mrp.mrp_workorder_report" sequence="30"/>
+
+    <menuitem id="menu_fp_purchase_root" name="Purchase" parent="menu_fulfillment_planner_root" sequence="30"/>
+    <menuitem id="menu_fp_purchase_rfq" name="RFQs" parent="menu_fp_purchase_root" action="purchase.purchase_rfq" sequence="10"/>
+    <menuitem id="menu_fp_purchase_orders" name="Purchase Orders" parent="menu_fp_purchase_root" action="purchase.purchase_form_action" sequence="20"/>
+    <menuitem id="menu_fp_purchase_products" name="Products" parent="menu_fp_purchase_root" action="purchase.product_normal_action_puchased" sequence="30"/>
+    <menuitem id="menu_fp_purchase_vendors" name="Vendors" parent="menu_fp_purchase_root" action="account.res_partner_action_supplier" sequence="35"/>
+    <menuitem id="menu_fp_purchase_reporting" name="Reporting" parent="menu_fp_purchase_root" action="purchase.action_purchase_order_report_all" sequence="40"/>
+
+    <menuitem id="menu_fp_inventory_root" name="Inventory" parent="menu_fulfillment_planner_root" sequence="40"/>
+    <menuitem id="menu_fp_inventory_receipts" name="Receipts" parent="menu_fp_inventory_root" action="stock.action_picking_tree_incoming" sequence="10"/>
+    <menuitem id="menu_fp_inventory_deliveries" name="Deliveries" parent="menu_fp_inventory_root" action="stock.action_picking_tree_outgoing" sequence="20"/>
+    <menuitem id="menu_fp_inventory_internal" name="Internal Transfers" parent="menu_fp_inventory_root" action="stock.action_picking_tree_internal" sequence="30"/>
+    <menuitem id="menu_fp_inventory_products" name="Products" parent="menu_fp_inventory_root" action="stock.product_template_action_product" sequence="40"/>
+    <menuitem id="menu_fp_inventory_reporting" name="Reporting" parent="menu_fp_inventory_root" action="stock.action_product_stock_view" sequence="50"/>
+
+    <menuitem id="menu_fp_dashboards_root" name="Dashboards" parent="menu_fulfillment_planner_root"
+              action="spreadsheet_dashboard.ir_actions_dashboard_action" sequence="50"/>
+</odoo>

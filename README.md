@@ -1,5 +1,5 @@
-Current status (v0.5.02) – One app navigation (Sales/Manufacturing/Purchase/Inventory)
-Release date: 2026-01-29
+Current status (v0.5.08) – Validation revamp (batch + SO locking)
+Release date: 2026-02-16
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
 - Shortage analysis (v0.4.01+):
@@ -21,6 +21,26 @@ Implemented in Odoo 17 Community:
   - Manufacturing: Manufacturing Orders / Bills of Materials / Reporting
   - Purchase: RFQs / Purchase Orders / Products / Vendors / Reporting
   - Inventory: Receipts / Deliveries / Internal Transfers / Products / Reporting
+- Validation rules:
+  - only one Draft batch per company
+  - Planning Batch list hides `New` when a Draft batch already exists in current company
+  - shortage analysis auto-resets to Draft after 30 minutes (on open/list)
+  - shortage clears + Draft reset when linked sales orders/lines change
+  - sales orders locked while linked to any batch; line edits blocked except pricing
+  - Undo MOs now reverts batch status to Draft
+  - fixed `sale.order.line.create` compatibility for delivery/shipping line creation flow
+  - SO line fulfillment status: new → planned → delivered → invoiced
+  - SO fulfillment status computed from line statuses
+- Sales fields:
+  - `sale.order.schedule_date` (Date)
+  - `sale.order.priority` (Selection 1..5, default 3)
+  - `sale.order.line.reserved` (Boolean)
+  - `schedule_date` and `priority` positioned under `Customer` on SO form with visible labels
+  - `schedule_date` and `priority` are available on Sales Order list view as optional columns
+- Default UI behavior:
+  - Fulfillment Planner set as default home action on login (internal users + default user template)
+  - Discuss app root menu is hidden
+  - Dashboards entry added into Fulfillment Planner app navigation
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
