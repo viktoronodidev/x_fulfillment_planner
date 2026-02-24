@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class PlanningBatchMoCheckWizard(models.TransientModel):
@@ -30,7 +30,7 @@ class PlanningBatchMoCheckWizard(models.TransientModel):
         readonly=True,
     )
 
-    @fields.depends('batch_id', 'batch_id.mrp_production_ids', 'batch_id.mrp_production_ids.state')
+    @api.depends('batch_id', 'batch_id.mrp_production_ids', 'batch_id.mrp_production_ids.state')
     def _compute_mo_groups(self):
         for wizard in self:
             mos = wizard.batch_id.mrp_production_ids
