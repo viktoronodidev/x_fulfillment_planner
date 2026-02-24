@@ -23,3 +23,5 @@ access_planning_batch_demand_summary_backoffice,planning.batch.demand.summary ba
 access_planning_batch_demand_summary_admin,planning.batch.demand.summary admin,model_planning_batch_demand_summary,base.group_system,1,1,1,1
 access_planning_batch_chain_line_backoffice,planning.batch.chain.line backoffice,model_planning_batch_chain_line,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
 access_planning_batch_chain_line_admin,planning.batch.chain.line admin,model_planning_batch_chain_line,base.group_system,1,1,1,1
+access_planning_batch_mo_check_wizard_backoffice,planning.batch.mo.check.wizard backoffice,model_planning_batch_mo_check_wizard,x_fulfillment_planner.group_fulfillment_planner_backoffice,1,1,1,1
+access_planning_batch_mo_check_wizard_admin,planning.batch.mo.check.wizard admin,model_planning_batch_mo_check_wizard,base.group_system,1,1,1,1

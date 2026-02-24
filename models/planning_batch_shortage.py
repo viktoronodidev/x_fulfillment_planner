@@ -27,6 +27,7 @@ class PlanningBatchShortage(models.Model):
         string='UoM',
         required=True,
     )
+    level = fields.Integer(string='Level', default=0, index=True)
     demand_qty = fields.Float(string='Demand Qty')
     available_qty = fields.Float(string='Available Qty')
     shortage_qty = fields.Float(string='Shortage Qty')

@@ -10,4 +10,5 @@ from . import planning_batch_bom_issue
 from . import planning_batch_explosion_node
 from . import planning_batch_demand_summary
 from . import planning_batch_chain_line
+from . import planning_batch_mo_check_wizard
 from . import sale_order

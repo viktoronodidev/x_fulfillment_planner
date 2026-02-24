@@ -19,14 +19,21 @@
                 <header>
                     <field name="status" widget="statusbar" statusbar_visible="draft,shortage_analyzed,calculated,confirmed,done"/>
                     <button name="action_open_select_sales_orders" type="object" string="Select Sales Orders"
-                            class="btn-primary" modifiers="{'invisible': [('status', '!=', 'draft')]}"/>
-                    <button name="action_analyze_structure" type="object" string="Analyze Structure"
-                            class="btn-secondary" modifiers="{'invisible': [('status', 'not in', ['draft', 'shortage_analyzed'])]}"/>
-                    <button name="action_analyze_shortage" type="object" string="Analyze Shortage"
+                            class="btn-primary" modifiers="{'invisible': [('status', 'in', ['calculated', 'confirmed', 'done'])]}"/>
+                    <button name="action_analyze" type="object" string="Analyze"
                             class="btn-secondary" modifiers="{'invisible': [('status', 'not in', ['draft', 'shortage_analyzed'])]}"/>
                     <button name="action_create_suggested_mo" type="object" string="Create MOs"
                             class="btn-secondary"
-                            modifiers="{'invisible': ['|', ('shortage_count', '=', 0), ('status', '!=', 'shortage_analyzed')]}"/>
+                            modifiers="{'invisible': [('status', 'in', ['calculated', 'confirmed', 'done'])]}"/>
+                    <button name="action_revert_to_draft" type="object" string="Revert to Draft"
+                            class="btn-secondary" confirm="This will remove planned manufacturing orders. Continue?"
+                            modifiers="{'invisible': [('status', '!=', 'calculated')]}"/>
+                    <button name="action_confirm_all_mos" type="object" string="Confirm All MOs"
+                            class="btn-primary"
+                            modifiers="{'invisible': [('status', '!=', 'calculated')]}"/>
+                    <button name="action_check_manufacturing_orders" type="object" string="Check Manufacturing Orders"
+                            class="btn-secondary"
+                            modifiers="{'invisible': [('status', '!=', 'confirmed')]}"/>
                 </header>
                 <sheet class="fp_sheet fp_sheet--full">
                     <group>
@@ -299,50 +306,99 @@
                             </group>
                         </page>
                         <page string="Shortage">
+                            <group invisible="1">
+                                <field name="has_shortage_level0"/>
+                                <field name="has_shortage_level1"/>
+                                <field name="has_shortage_level2"/>
+                                <field name="has_shortage_level3"/>
+                                <field name="has_shortage_level4"/>
+                            </group>
                             <group>
                                 <field name="shortage_last_run" readonly="1"/>
                                 <field name="shortage_last_run_by" readonly="1"/>
                             </group>
-                            <field name="shortage_line_ids">
-                                <tree create="0" edit="0" delete="0"
-                                      decoration-danger="shortage_qty &gt; 0"
-                                      decoration-success="shortage_qty &lt;= 0">
-                                    <field name="product_id"/>
-                                    <field name="demand_qty"/>
-                                    <field name="available_qty"/>
-                                    <field name="shortage_qty"/>
-                                    <field name="uom_id"/>
-                                    <field name="source_type"/>
-                                </tree>
-                                <form string="Shortage">
-                                    <group>
-                                        <field name="product_id" readonly="1"/>
-                                        <field name="uom_id" readonly="1"/>
-                                        <field name="demand_qty" readonly="1"/>
-                                        <field name="available_qty" readonly="1"/>
-                                        <field name="shortage_qty" readonly="1"/>
-                                        <field name="source_type" readonly="1"/>
-                                    </group>
-                                    <group string="Related Sales Order Lines">
-                                        <field name="related_line_ids">
-                                            <tree create="0" edit="0" delete="0">
-                                                <field name="order_id"/>
-                                                <field name="product_id"/>
-                                                <field name="product_uom_qty"/>
-                                                <field name="product_uom"/>
-                                                <field name="price_subtotal"/>
-                                            </tree>
-                                        </field>
-                                    </group>
-                                </form>
-                            </field>
+                            <group string="Level0" modifiers="{'invisible': [('has_shortage_level0', '=', False)]}">
+                                <field name="shortage_level0_ids">
+                                    <tree create="0" edit="0" delete="0"
+                                          decoration-danger="shortage_qty &gt; 0"
+                                          decoration-success="shortage_qty &lt;= 0">
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="shortage_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="source_type"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level1" modifiers="{'invisible': [('has_shortage_level1', '=', False)]}">
+                                <field name="shortage_level1_ids">
+                                    <tree create="0" edit="0" delete="0"
+                                          decoration-danger="shortage_qty &gt; 0"
+                                          decoration-success="shortage_qty &lt;= 0">
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="shortage_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="source_type"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level2" modifiers="{'invisible': [('has_shortage_level2', '=', False)]}">
+                                <field name="shortage_level2_ids">
+                                    <tree create="0" edit="0" delete="0"
+                                          decoration-danger="shortage_qty &gt; 0"
+                                          decoration-success="shortage_qty &lt;= 0">
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="shortage_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="source_type"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level3" modifiers="{'invisible': [('has_shortage_level3', '=', False)]}">
+                                <field name="shortage_level3_ids">
+                                    <tree create="0" edit="0" delete="0"
+                                          decoration-danger="shortage_qty &gt; 0"
+                                          decoration-success="shortage_qty &lt;= 0">
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="shortage_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="source_type"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level4" modifiers="{'invisible': [('has_shortage_level4', '=', False)]}">
+                                <field name="shortage_level4_ids">
+                                    <tree create="0" edit="0" delete="0"
+                                          decoration-danger="shortage_qty &gt; 0"
+                                          decoration-success="shortage_qty &lt;= 0">
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="shortage_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="source_type"/>
+                                    </tree>
+                                </field>
+                            </group>
                         </page>
                         <page string="Explosion">
                             <group>
-                                <button name="action_analyze_structure" type="object" string="Analyze Structure"
-                                        class="btn-secondary"/>
                                 <button name="action_open_manufacturing_chain" type="object" string="Open Manufacturing Chain"
                                         class="btn-secondary"/>
+                            </group>
+                            <group invisible="1">
+                                <field name="has_explosion_level0"/>
+                                <field name="has_explosion_level1"/>
+                                <field name="has_explosion_level2"/>
+                                <field name="has_explosion_level3"/>
+                                <field name="has_explosion_level4"/>
                             </group>
                             <group>
                                 <field name="explosion_last_run" readonly="1"/>
@@ -353,11 +409,13 @@
                                 <field name="raw_product_count" readonly="1"/>
                                 <field name="explosion_issue_count" readonly="1"/>
                             </group>
-                            <group string="Explosion Nodes" class="fp_explosion_nodes_group">
-                                <field name="explosion_root_node_ids">
+                            <group string="Level0" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level0', '=', False)]}">
+                                <field name="explosion_level0_ids">
                                     <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
                                           decoration-danger="state in ['cycle', 'missing_bom']"
                                           decoration-warning="state == 'excluded'">
+                                        <field name="level"/>
+                                        <field name="parent_product_id"/>
                                         <field name="product_id"/>
                                         <field name="demand_qty"/>
                                         <field name="uom_id"/>
@@ -365,6 +423,78 @@
                                         <field name="supply_type" widget="badge"/>
                                         <field name="bom_id"/>
                                         <field name="child_count"/>
+                                        <field name="state" widget="badge"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level1" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level1', '=', False)]}">
+                                <field name="explosion_level1_ids">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="state in ['cycle', 'missing_bom']"
+                                          decoration-warning="state == 'excluded'">
+                                        <field name="level"/>
+                                        <field name="parent_product_id"/>
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="item_type" widget="badge"/>
+                                        <field name="supply_type" widget="badge"/>
+                                        <field name="bom_id"/>
+                                        <field name="state" widget="badge"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level2" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level2', '=', False)]}">
+                                <field name="explosion_level2_ids">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="state in ['cycle', 'missing_bom']"
+                                          decoration-warning="state == 'excluded'">
+                                        <field name="level"/>
+                                        <field name="parent_product_id"/>
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="item_type" widget="badge"/>
+                                        <field name="supply_type" widget="badge"/>
+                                        <field name="bom_id"/>
+                                        <field name="state" widget="badge"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level3" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level3', '=', False)]}">
+                                <field name="explosion_level3_ids">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="state in ['cycle', 'missing_bom']"
+                                          decoration-warning="state == 'excluded'">
+                                        <field name="level"/>
+                                        <field name="parent_product_id"/>
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="item_type" widget="badge"/>
+                                        <field name="supply_type" widget="badge"/>
+                                        <field name="bom_id"/>
+                                        <field name="state" widget="badge"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Level4" class="fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level4', '=', False)]}">
+                                <field name="explosion_level4_ids">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="state in ['cycle', 'missing_bom']"
+                                          decoration-warning="state == 'excluded'">
+                                        <field name="level"/>
+                                        <field name="parent_product_id"/>
+                                        <field name="product_id"/>
+                                        <field name="demand_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="item_type" widget="badge"/>
+                                        <field name="supply_type" widget="badge"/>
+                                        <field name="bom_id"/>
                                         <field name="state" widget="badge"/>
                                         <field name="message"/>
                                     </tree>
@@ -613,6 +743,54 @@
                     <field name="state" readonly="1"/>
                     <field name="message" readonly="1"/>
                 </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_planning_batch_mo_check_wizard_form" model="ir.ui.view">
+        <field name="name">planning.batch.mo.check.wizard.form</field>
+        <field name="model">planning.batch.mo.check.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Check Manufacturing Orders">
+                <group>
+                    <field name="batch_id" readonly="1"/>
+                </group>
+                <group string="Open">
+                    <field name="open_mo_ids">
+                        <tree create="0" edit="0" delete="0">
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="product_qty"/>
+                            <field name="date_start"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </group>
+                <group string="Closed">
+                    <field name="closed_mo_ids">
+                        <tree create="0" edit="0" delete="0">
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="product_qty"/>
+                            <field name="date_start"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </group>
+                <group string="Canceled">
+                    <field name="canceled_mo_ids">
+                        <tree create="0" edit="0" delete="0">
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="product_qty"/>
+                            <field name="date_start"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
             </form>
         </field>
     </record>

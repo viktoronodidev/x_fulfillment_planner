@@ -32,7 +32,7 @@ class PlanningBatch(models.Model):
     status = fields.Selection(
         [
             ('draft', 'Draft'),
-            ('shortage_analyzed', 'Shortage Analyzed'),
+            ('shortage_analyzed', 'Analyzed'),
             ('calculated', 'Calculated'),
             ('confirmed', 'Confirmed'),
             ('done', 'Done'),
@@ -99,6 +99,36 @@ class PlanningBatch(models.Model):
         string='Shortage Lines',
         readonly=True,
     )
+    shortage_level0_ids = fields.One2many(
+        comodel_name='planning.batch.shortage',
+        compute='_compute_shortage_level_ids',
+        string='Shortage Level 0',
+    )
+    shortage_level1_ids = fields.One2many(
+        comodel_name='planning.batch.shortage',
+        compute='_compute_shortage_level_ids',
+        string='Shortage Level 1',
+    )
+    shortage_level2_ids = fields.One2many(
+        comodel_name='planning.batch.shortage',
+        compute='_compute_shortage_level_ids',
+        string='Shortage Level 2',
+    )
+    shortage_level3_ids = fields.One2many(
+        comodel_name='planning.batch.shortage',
+        compute='_compute_shortage_level_ids',
+        string='Shortage Level 3',
+    )
+    shortage_level4_ids = fields.One2many(
+        comodel_name='planning.batch.shortage',
+        compute='_compute_shortage_level_ids',
+        string='Shortage Level 4',
+    )
+    has_shortage_level0 = fields.Boolean(compute='_compute_shortage_level_flags')
+    has_shortage_level1 = fields.Boolean(compute='_compute_shortage_level_flags')
+    has_shortage_level2 = fields.Boolean(compute='_compute_shortage_level_flags')
+    has_shortage_level3 = fields.Boolean(compute='_compute_shortage_level_flags')
+    has_shortage_level4 = fields.Boolean(compute='_compute_shortage_level_flags')
     product_summary_ids = fields.One2many(
         comodel_name='planning.batch.product_summary',
         inverse_name='batch_id',
@@ -131,6 +161,36 @@ class PlanningBatch(models.Model):
         string='Root Explosion Nodes',
         compute='_compute_explosion_root_node_ids',
     )
+    explosion_level0_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        compute='_compute_explosion_level_ids',
+        string='Explosion Level 0',
+    )
+    explosion_level1_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        compute='_compute_explosion_level_ids',
+        string='Explosion Level 1',
+    )
+    explosion_level2_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        compute='_compute_explosion_level_ids',
+        string='Explosion Level 2',
+    )
+    explosion_level3_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        compute='_compute_explosion_level_ids',
+        string='Explosion Level 3',
+    )
+    explosion_level4_ids = fields.One2many(
+        comodel_name='planning.batch.explosion.node',
+        compute='_compute_explosion_level_ids',
+        string='Explosion Level 4',
+    )
+    has_explosion_level0 = fields.Boolean(compute='_compute_explosion_level_flags')
+    has_explosion_level1 = fields.Boolean(compute='_compute_explosion_level_flags')
+    has_explosion_level2 = fields.Boolean(compute='_compute_explosion_level_flags')
+    has_explosion_level3 = fields.Boolean(compute='_compute_explosion_level_flags')
+    has_explosion_level4 = fields.Boolean(compute='_compute_explosion_level_flags')
     demand_summary_ids = fields.One2many(
         comodel_name='planning.batch.demand.summary',
         inverse_name='batch_id',
@@ -348,6 +408,42 @@ class PlanningBatch(models.Model):
     def _compute_explosion_root_node_ids(self):
         for batch in self:
             batch.explosion_root_node_ids = batch.explosion_node_ids.filtered(lambda n: not n.parent_id)
+
+    @api.depends('explosion_node_ids.level')
+    def _compute_explosion_level_ids(self):
+        for batch in self:
+            batch.explosion_level0_ids = batch.explosion_node_ids.filtered(lambda n: n.level == 0)
+            batch.explosion_level1_ids = batch.explosion_node_ids.filtered(lambda n: n.level == 1)
+            batch.explosion_level2_ids = batch.explosion_node_ids.filtered(lambda n: n.level == 2)
+            batch.explosion_level3_ids = batch.explosion_node_ids.filtered(lambda n: n.level == 3)
+            batch.explosion_level4_ids = batch.explosion_node_ids.filtered(lambda n: n.level == 4)
+
+    @api.depends('explosion_level0_ids', 'explosion_level1_ids', 'explosion_level2_ids', 'explosion_level3_ids', 'explosion_level4_ids')
+    def _compute_explosion_level_flags(self):
+        for batch in self:
+            batch.has_explosion_level0 = bool(batch.explosion_level0_ids)
+            batch.has_explosion_level1 = bool(batch.explosion_level1_ids)
+            batch.has_explosion_level2 = bool(batch.explosion_level2_ids)
+            batch.has_explosion_level3 = bool(batch.explosion_level3_ids)
+            batch.has_explosion_level4 = bool(batch.explosion_level4_ids)
+
+    @api.depends('shortage_line_ids.level')
+    def _compute_shortage_level_ids(self):
+        for batch in self:
+            batch.shortage_level0_ids = batch.shortage_line_ids.filtered(lambda l: l.level == 0)
+            batch.shortage_level1_ids = batch.shortage_line_ids.filtered(lambda l: l.level == 1)
+            batch.shortage_level2_ids = batch.shortage_line_ids.filtered(lambda l: l.level == 2)
+            batch.shortage_level3_ids = batch.shortage_line_ids.filtered(lambda l: l.level == 3)
+            batch.shortage_level4_ids = batch.shortage_line_ids.filtered(lambda l: l.level == 4)
+
+    @api.depends('shortage_level0_ids', 'shortage_level1_ids', 'shortage_level2_ids', 'shortage_level3_ids', 'shortage_level4_ids')
+    def _compute_shortage_level_flags(self):
+        for batch in self:
+            batch.has_shortage_level0 = bool(batch.shortage_level0_ids)
+            batch.has_shortage_level1 = bool(batch.shortage_level1_ids)
+            batch.has_shortage_level2 = bool(batch.shortage_level2_ids)
+            batch.has_shortage_level3 = bool(batch.shortage_level3_ids)
+            batch.has_shortage_level4 = bool(batch.shortage_level4_ids)
 
     @api.depends('line_ids', 'line_ids.selected', 'line_ids.product_id', 'line_ids.qty_product_uom')
     def _compute_product_summary_ids(self):
@@ -666,6 +762,10 @@ class PlanningBatch(models.Model):
             }
         }
 
+    def action_analyze(self):
+        self.ensure_one()
+        return self.action_analyze_shortage()
+
     def action_analyze_shortage(self):
         self.ensure_one()
         if self.status not in ['draft', 'shortage_analyzed']:
@@ -699,6 +799,7 @@ class PlanningBatch(models.Model):
                     'batch_id': self.id,
                     'product_id': product.id,
                     'uom_id': product.uom_id.id,
+                    'level': line.level_min or 0,
                     'demand_qty': line.manufacture_demand_qty,
                     'available_qty': available_qty,
                     'shortage_qty': shortage_qty,
@@ -714,6 +815,7 @@ class PlanningBatch(models.Model):
                     'batch_id': self.id,
                     'product_id': product.id,
                     'uom_id': product.uom_id.id,
+                    'level': line.level_min or 0,
                     'demand_qty': line.procurement_demand_qty,
                     'available_qty': available_qty,
                     'shortage_qty': shortage_qty,
@@ -729,7 +831,7 @@ class PlanningBatch(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('Shortage analysis completed'),
-                'message': _('Shortage table updated from multi-level demand.'),
+                'message': _('Analysis completed. Structure and shortage data are updated.'),
                 'type': 'success',
                 'sticky': False,
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
@@ -828,4 +930,49 @@ class PlanningBatch(models.Model):
                 'sticky': False,
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             }
+        }
+
+    def action_revert_to_draft(self):
+        self.ensure_one()
+        if self.status != 'calculated':
+            raise UserError(_('Revert to Draft is only available in Calculated status.'))
+        return self.action_undo_created_mo()
+
+    def action_confirm_all_mos(self):
+        self.ensure_one()
+        if self.status != 'calculated':
+            raise UserError(_('Confirm all MOs is only available in Calculated status.'))
+
+        if not self.mrp_production_ids:
+            raise UserError(_('There are no Manufacturing Orders in this batch.'))
+
+        draft_mos = self.mrp_production_ids.filtered(lambda mo: mo.state == 'draft')
+        if draft_mos:
+            draft_mos.action_confirm()
+
+        self.status = 'confirmed'
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Manufacturing Orders confirmed'),
+                'message': _('All draft Manufacturing Orders in this batch were confirmed.'),
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            }
+        }
+
+    def action_check_manufacturing_orders(self):
+        self.ensure_one()
+        wizard = self.env['planning.batch.mo.check.wizard'].create({
+            'batch_id': self.id,
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Check Manufacturing Orders'),
+            'res_model': 'planning.batch.mo.check.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'res_id': wizard.id,
         }

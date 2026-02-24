@@ -1,4 +1,4 @@
-Current status (v0.6.04) – Multi-level BOM structure analysis
+Current status (v0.6.05) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -55,6 +55,13 @@ Implemented in Odoo 17 Community:
     - improved visual separation (root-only table focus, badges, and section containers)
     - manufacturing chain list now shows all levels grouped by level-0 product with aggregated demand lines
     - dedicated read-only chain report model (`planning.batch.chain.line`) with level/type/status badges
+  - Analyze flow polish:
+    - header now uses one `Analyze` action (backend still executes structure + shortage steps separately)
+    - batch status label shown as `Analyzed`
+    - Explosion and Shortage tabs are split into Level0..Level4 sections; empty sections stay hidden
+  - Batch workflow controls:
+    - in `calculated`: `Revert to Draft` + `Confirm All MOs`
+    - in `confirmed`: `Check Manufacturing Orders` popup with Open / Closed / Canceled sections
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
