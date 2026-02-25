@@ -264,7 +264,7 @@
                             </div>
                         </page>
                         <page string="Selection">
-                            <details class="fp_section">
+                            <details class="fp_section" open="open">
                                 <summary class="fp_section_summary">
                                     Sales Orders
                                 </summary>
@@ -333,7 +333,7 @@
                                 <field name="has_shortage_level3"/>
                                 <field name="has_shortage_level4"/>
                             </group>
-                            <details class="fp_section" modifiers="{'invisible': [('has_shortage_level0', '=', False)]}">
+                            <details class="fp_section" open="open" modifiers="{'invisible': [('has_shortage_level0', '=', False)]}">
                                 <summary class="fp_section_summary">
                                     Level0
                                 </summary>
@@ -427,7 +427,7 @@
                                 <field name="has_explosion_level3"/>
                                 <field name="has_explosion_level4"/>
                             </group>
-                            <details class="fp_section fp_explosion_summary_group">
+                            <details class="fp_section fp_explosion_summary_group" open="open">
                                 <summary class="fp_section_summary">
                                     Demand Summary
                                 </summary>
@@ -555,7 +555,7 @@
                             </details>
                         </page>
                         <page string="Manufacture">
-                            <details class="fp_section">
+                            <details class="fp_section" open="open">
                                 <summary class="fp_section_summary">
                                     Manufacturing Orders
                                 </summary>
@@ -572,7 +572,7 @@
                             </details>
                         </page>
                         <page string="Procurement">
-                            <details class="fp_section">
+                            <details class="fp_section" open="open">
                                 <summary class="fp_section_summary">
                                     Procurement
                                 </summary>

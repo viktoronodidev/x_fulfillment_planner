@@ -1,4 +1,4 @@
-Current status (v0.6.09) – Multi-level BOM structure analysis
+Current status (v0.6.10) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -75,6 +75,9 @@ Implemented in Odoo 17 Community:
     - removed duplicated shortage/explosion meta sections from tabs (kept on dashboard KPIs)
     - Explosion tab now shows `Demand Summary` as first section
     - Manufacture tab shows only Manufacturing Orders list (MO meta and MO lines removed)
+  - v0.6.10 UX polish:
+    - first section in each planner tab is open by default
+    - remaining sections stay collapsed by default
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
