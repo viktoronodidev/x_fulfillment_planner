@@ -177,6 +177,16 @@ class ProcurementBatch(models.Model):
         sellers = sellers.sorted(lambda s: (s.sequence, s.id))
         return sellers[:1].partner_id
 
+    def _get_supplierinfo(self, product, vendor, qty=0.0):
+        self.ensure_one()
+        product = product.with_company(self.company_id)
+        return product._select_seller(
+            partner_id=vendor,
+            quantity=qty,
+            date=fields.Date.context_today(self),
+            uom_id=product.uom_po_id,
+        )
+
     def action_analyze(self):
         self.ensure_one()
         if not self.include_open_demands and not self.include_min_stock:
@@ -276,7 +286,7 @@ class ProcurementBatch(models.Model):
             }
         }
 
-    def _get_or_create_vendor_rfq(self, vendor):
+    def _get_or_create_vendor_rfq(self, vendor, currency):
         self.ensure_one()
         draft_domain = [
             ('company_id', '=', self.company_id.id),
@@ -287,11 +297,15 @@ class ProcurementBatch(models.Model):
         if len(draft_rfqs) > 1:
             raise UserError(_('Only one Draft RFQ is allowed per vendor and company.'))
         if draft_rfqs:
-            return draft_rfqs[0]
+            rfq = draft_rfqs[0]
+            if currency and rfq.currency_id != currency and not rfq.order_line:
+                rfq.currency_id = currency.id
+            return rfq
         return self.env['purchase.order'].create({
             'partner_id': vendor.id,
             'company_id': self.company_id.id,
             'origin': f"PP:{self.name}",
+            'currency_id': currency.id if currency else self.company_id.currency_id.id,
         })
 
     def action_create_rfqs(self):
@@ -308,9 +322,18 @@ class ProcurementBatch(models.Model):
         created_lines = self.env['purchase.order.line']
 
         for vendor in lines.mapped('vendor_id'):
-            rfq = self._get_or_create_vendor_rfq(vendor)
-            created_pos |= rfq
             vendor_lines = lines.filtered(lambda l: l.vendor_id == vendor)
+            first_currency = False
+            for line in vendor_lines:
+                seller = self._get_supplierinfo(line.product_id, vendor, qty=line.suggested_qty)
+                if seller and seller.currency_id:
+                    first_currency = seller.currency_id
+                    break
+            if not first_currency:
+                first_currency = getattr(vendor, 'property_purchase_currency_id', False) or self.company_id.currency_id
+
+            rfq = self._get_or_create_vendor_rfq(vendor, first_currency)
+            created_pos |= rfq
             for line in vendor_lines:
                 open_qty = self._get_open_procurement_qty(line.product_id).get(line.product_id.id, 0.0)
                 remaining = max(line.uncovered_qty - open_qty, 0.0)
@@ -324,12 +347,24 @@ class ProcurementBatch(models.Model):
                     rounding_method='UP',
                 )
 
+                seller = self._get_supplierinfo(line.product_id, vendor, qty=remaining)
+                source_currency = seller.currency_id if seller and seller.currency_id else self.company_id.currency_id
+                source_price = seller.price if seller else line.product_id.standard_price
+                price_unit = source_price
+                if source_currency != rfq.currency_id:
+                    price_unit = source_currency._convert(
+                        source_price,
+                        rfq.currency_id,
+                        self.company_id,
+                        fields.Date.context_today(self),
+                    )
+
                 pol = self.env['purchase.order.line'].create({
                     'order_id': rfq.id,
                     'product_id': line.product_id.id,
                     'product_qty': qty_po_uom,
                     'product_uom': line.product_id.uom_po_id.id,
-                    'price_unit': line.product_id.standard_price,
+                    'price_unit': price_unit,
                     'name': line.product_id.display_name,
                     'date_planned': fields.Datetime.now(),
                 })

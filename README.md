@@ -1,4 +1,4 @@
-Current status (v0.7.06) – Procurement planner separated
+Current status (v0.7.07) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -125,6 +125,10 @@ Implemented in Odoo 17 Community:
   - fixed Procurement Planning Analysis/RFQ table overlap with responsive container behavior
   - added bordered section containers for Analysis and RFQs
   - RFQ table extended with extra columns (`Origin`, `Created On`) for easier review
+- v0.7.07 purchasing pricing/currency:
+  - RFQ line `price_unit` now comes from supplier price (`product.supplierinfo`) when vendor is configured on the product
+  - fallback remains product `standard_price` if no supplier price is found
+  - RFQ currency is set from supplier currency (fallback: vendor purchase currency / company currency)
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
