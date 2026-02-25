@@ -33,10 +33,6 @@
                             class="btn-secondary" invisible="status not in ['calculated', 'confirmed', 'done']"/>
                     <button name="action_open_manufacturing_chain" type="object" string="Open Manufacturing Chain"
                             class="btn-secondary" invisible="status == 'draft'"/>
-                    <button name="action_open_procurement_scope" type="object" string="Analyze Procurement"
-                            class="btn-secondary" invisible="status not in ['confirmed', 'done']"/>
-                    <button name="action_create_procurement_rfqs" type="object" string="Create RFQs"
-                            class="btn-primary" invisible="status not in ['confirmed', 'done']"/>
                 </header>
                 <sheet class="fp_sheet fp_sheet--full">
                     <group>
@@ -575,36 +571,6 @@
                                 </field>
                             </details>
                         </page>
-                        <page string="Procurement">
-                            <details class="fp_section" open="open">
-                                <summary class="fp_section_summary">
-                                    Procurement
-                                </summary>
-                                <div class="fp_block_meta">
-                                    <field name="procurement_last_run" readonly="1"/>
-                                    <field name="procurement_last_run_by" readonly="1"/>
-                                    <field name="procurement_include_open_demands" readonly="1"/>
-                                    <field name="procurement_include_min_stock" readonly="1"/>
-                                </div>
-                                <field name="procurement_line_ids">
-                                    <tree create="0" edit="0" delete="0"
-                                          decoration-danger="status == 'missing_vendor'"
-                                          decoration-success="status == 'ready'">
-                                        <field name="product_id"/>
-                                        <field name="vendor_id"/>
-                                        <field name="open_demand_qty"/>
-                                        <field name="min_stock_demand_qty"/>
-                                        <field name="total_demand_qty"/>
-                                        <field name="available_qty"/>
-                                        <field name="existing_open_rfq_qty"/>
-                                        <field name="suggested_qty"/>
-                                        <field name="uom_id"/>
-                                        <field name="status" widget="badge"/>
-                                        <field name="message"/>
-                                    </tree>
-                                </field>
-                            </details>
-                        </page>
                         <page string="Workflow overview">
                             <group>
                                 <field name="sale_order_ids" readonly="1">
@@ -683,7 +649,7 @@
     </record>
 
     <record id="action_planning_batch" model="ir.actions.act_window">
-        <field name="name">Planning Batches</field>
+        <field name="name">Fulfillment Planning</field>
         <field name="res_model">planning.batch</field>
         <field name="view_mode">tree,form</field>
     </record>
@@ -924,7 +890,7 @@
     <menuitem id="menu_fulfillment_planner_root" name="Fulfillment Planner" sequence="10"/>
 
     <menuitem id="menu_fp_planner_root" name="Planner" parent="menu_fulfillment_planner_root" sequence="5"/>
-    <menuitem id="menu_planning_batch" name="Planning Batches" parent="menu_fp_planner_root" action="action_planning_batch" sequence="10"/>
+    <menuitem id="menu_planning_batch" name="Fulfillment Planning" parent="menu_fp_planner_root" action="action_planning_batch" sequence="10"/>
 
     <menuitem id="menu_fp_sales_root" name="Sales" parent="menu_fulfillment_planner_root" sequence="10"/>
     <menuitem id="menu_fp_sales_orders" name="Orders" parent="menu_fp_sales_root" action="sale.action_orders" sequence="10"/>

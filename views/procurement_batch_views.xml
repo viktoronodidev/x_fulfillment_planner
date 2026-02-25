@@ -1,0 +1,133 @@
+<odoo>
+    <record id="view_procurement_batch_tree" model="ir.ui.view">
+        <field name="name">procurement.batch.tree</field>
+        <field name="model">procurement.batch</field>
+        <field name="arch" type="xml">
+            <tree string="Procurement Planning">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="company_id"/>
+                <field name="status"/>
+                <field name="product_count"/>
+                <field name="suggested_qty_total"/>
+                <field name="rfq_count"/>
+                <field name="analysis_run_at"/>
+                <field name="analysis_run_by"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_procurement_batch_form" model="ir.ui.view">
+        <field name="name">procurement.batch.form</field>
+        <field name="model">procurement.batch</field>
+        <field name="arch" type="xml">
+            <form string="Procurement Planning">
+                <header>
+                    <button name="action_analyze" type="object" string="Analyze Procurement"
+                            class="btn-primary"
+                            invisible="status not in ['draft', 'analyzed']"/>
+                    <button name="action_create_rfqs" type="object" string="Create RFQs"
+                            class="btn-secondary"
+                            invisible="status != 'analyzed'"/>
+                    <button name="action_set_done" type="object" string="Mark Done"
+                            class="btn-secondary"
+                            invisible="status not in ['rfq_created']"/>
+                    <button name="action_set_draft" type="object" string="Revert to Draft"
+                            class="btn-secondary"
+                            invisible="status not in ['analyzed', 'rfq_created', 'done']"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,analyzed,rfq_created,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="date"/>
+                            <field name="company_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="include_open_demands"/>
+                            <field name="include_min_stock"/>
+                            <field name="show_all_open_rfqs"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+
+                    <group col="5" class="mt16">
+                        <group>
+                            <label for="product_count" class="o_form_label"/>
+                            <div><field name="product_count" readonly="1"/></div>
+                        </group>
+                        <group>
+                            <label for="ready_count" class="o_form_label"/>
+                            <div><field name="ready_count" readonly="1"/></div>
+                        </group>
+                        <group>
+                            <label for="missing_vendor_count" class="o_form_label"/>
+                            <div><field name="missing_vendor_count" readonly="1"/></div>
+                        </group>
+                        <group>
+                            <label for="suggested_qty_total" class="o_form_label"/>
+                            <div><field name="suggested_qty_total" readonly="1"/></div>
+                        </group>
+                        <group>
+                            <label for="rfq_count" class="o_form_label"/>
+                            <div><field name="rfq_count" readonly="1"/></div>
+                        </group>
+                    </group>
+
+                    <group class="mt16">
+                        <group>
+                            <field name="analysis_run_at" readonly="1"/>
+                            <field name="analysis_run_by" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group class="mt16">
+                        <field name="line_ids" nolabel="1" readonly="1">
+                            <tree string="Procurement Analysis" create="0" edit="0" delete="0">
+                                <field name="product_id"/>
+                                <field name="vendor_id"/>
+                                <field name="open_demand_qty"/>
+                                <field name="min_stock_target_qty"/>
+                                <field name="total_target_qty"/>
+                                <field name="available_qty"/>
+                                <field name="uncovered_qty"/>
+                                <field name="existing_open_rfq_qty"/>
+                                <field name="suggested_qty"/>
+                                <field name="uom_id"/>
+                                <field name="status"/>
+                                <field name="message"/>
+                            </tree>
+                        </field>
+                    </group>
+
+                    <group class="mt16">
+                        <field name="rfq_ids" nolabel="1" readonly="1">
+                            <tree string="Prepared RFQs" create="0" edit="0" delete="0">
+                                <field name="name"/>
+                                <field name="partner_id"/>
+                                <field name="state"/>
+                                <field name="date_order"/>
+                                <field name="amount_total"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_procurement_batch" model="ir.actions.act_window">
+        <field name="name">Procurement Planning</field>
+        <field name="res_model">procurement.batch</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_procurement_batch"
+              name="Procurement Planning"
+              parent="menu_fp_planner_root"
+              action="action_procurement_batch"
+              sequence="20"/>
+</odoo>

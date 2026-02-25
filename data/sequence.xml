@@ -5,4 +5,12 @@
         <field name="padding">7</field>
         <field name="number_increment">1</field>
     </record>
+
+    <record id="seq_procurement_batch" model="ir.sequence">
+        <field name="name">Procurement Batch</field>
+        <field name="code">procurement.batch</field>
+        <field name="prefix">PP/</field>
+        <field name="padding">7</field>
+        <field name="number_increment">1</field>
+    </record>
 </odoo>

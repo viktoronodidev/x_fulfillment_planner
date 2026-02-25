@@ -1,6 +1,6 @@
 {
-    'name': 'Fulfillment Planner (v0.7.01)',
-    'version': '17.0.0.7.01',
+    'name': 'Fulfillment Planner (v0.7.02)',
+    'version': '17.0.0.7.02',
     'license': 'LGPL-3',
     'summary': 'Fulfillment planning control module',
     'depends': ['base', 'sale', 'purchase', 'mrp', 'stock', 'spreadsheet_dashboard'],
@@ -10,6 +10,7 @@
         'data/sequence.xml',
         'data/ui_defaults.xml',
         'views/planning_batch_views.xml',
+        'views/procurement_batch_views.xml',
         'views/sale_order_views.xml',
     ],
     'post_init_hook': 'post_init_hook',

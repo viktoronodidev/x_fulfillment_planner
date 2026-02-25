@@ -1,4 +1,4 @@
-Current status (v0.7.01) – Procurement planner MVP (global scope)
+Current status (v0.7.02) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -14,7 +14,7 @@ Implemented in Odoo 17 Community:
 - Dashboard layout (full-width, collapsible sections) + KPI bar
   - Sales Orders Included, Products Included, Products without BOM, MO Coverage %, Uncovered Demand Qty,
     Shortage Count, Shortage Qty, MOs Created, Last Analyzed
-- Tabs: Dashboard, Selection, Shortage, Manufacture, Procurement, Workflow overview
+- Tabs: Dashboard, Selection, Shortage, Manufacture, Workflow overview
 - Unified app navigation:
   - Planner + Sales + Manufacturing + Purchase + Inventory menus inside Fulfillment Planner
   - Sales: Orders / To Invoice / Products / Customers / Reporting
@@ -93,6 +93,21 @@ Implemented in Odoo 17 Community:
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
   - Create MOs now creates MOs for manufacturable shortages from exploded structure
+- v0.7.02 additions:
+  - Procurement planning moved to separate model and screen:
+    - `procurement.batch`
+    - `procurement.batch.line`
+  - New Planner menu entry:
+    - `Procurement Planning`
+  - Procurement batch lifecycle:
+    - draft → analyzed → rfq_created → done
+  - Global-by-company procurement analysis with toggles persisted on procurement batch:
+    - Open Demands
+    - Minimum Stock Quantities
+    - Show All Open RFQs (default: run-created only)
+  - Prepared RFQs are listed on the procurement batch for review/open/manual modification
+  - Planning Batches menu/action title changed to:
+    - `Fulfillment Planning`
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

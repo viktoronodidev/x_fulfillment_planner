@@ -13,4 +13,6 @@ from . import planning_batch_chain_line
 from . import planning_batch_mo_check_wizard
 from . import planning_batch_procurement_line
 from . import planning_batch_procurement_scope_wizard
+from . import procurement_batch
+from . import procurement_batch_line
 from . import sale_order
