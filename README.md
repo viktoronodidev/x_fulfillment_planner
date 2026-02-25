@@ -1,4 +1,4 @@
-Current status (v0.7.02) – Procurement planner separated
+Current status (v0.7.03) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -108,6 +108,9 @@ Implemented in Odoo 17 Community:
   - Prepared RFQs are listed on the procurement batch for review/open/manual modification
   - Planning Batches menu/action title changed to:
     - `Fulfillment Planning`
+- v0.7.03 fix:
+  - fixed procurement/open-demand calculation compatibility on Odoo 17 stock moves
+  - replaced unsupported `stock.move.quantity_done` usage with Odoo 17-compatible done quantity handling
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

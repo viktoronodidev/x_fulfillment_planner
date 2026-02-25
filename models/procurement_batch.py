@@ -111,7 +111,8 @@ class ProcurementBatch(models.Model):
             product = move.product_id
             if not product or product.type == 'service':
                 continue
-            remaining = max(move.product_uom_qty - move.quantity_done, 0.0)
+            done_qty = getattr(move, 'quantity', getattr(move, 'quantity_done', 0.0))
+            remaining = max(move.product_uom_qty - done_qty, 0.0)
             if remaining <= 0:
                 continue
             qty = move.product_uom._compute_quantity(remaining, product.uom_id)
