@@ -33,6 +33,10 @@
                             class="btn-secondary" invisible="status not in ['calculated', 'confirmed', 'done']"/>
                     <button name="action_open_manufacturing_chain" type="object" string="Open Manufacturing Chain"
                             class="btn-secondary" invisible="status == 'draft'"/>
+                    <button name="action_open_procurement_scope" type="object" string="Analyze Procurement"
+                            class="btn-secondary" invisible="status not in ['confirmed', 'done']"/>
+                    <button name="action_create_procurement_rfqs" type="object" string="Create RFQs"
+                            class="btn-primary" invisible="status not in ['confirmed', 'done']"/>
                 </header>
                 <sheet class="fp_sheet fp_sheet--full">
                     <group>
@@ -576,7 +580,29 @@
                                 <summary class="fp_section_summary">
                                     Procurement
                                 </summary>
-                                <div class="fp_muted">Planned for v0.5+</div>
+                                <div class="fp_block_meta">
+                                    <field name="procurement_last_run" readonly="1"/>
+                                    <field name="procurement_last_run_by" readonly="1"/>
+                                    <field name="procurement_include_open_demands" readonly="1"/>
+                                    <field name="procurement_include_min_stock" readonly="1"/>
+                                </div>
+                                <field name="procurement_line_ids">
+                                    <tree create="0" edit="0" delete="0"
+                                          decoration-danger="status == 'missing_vendor'"
+                                          decoration-success="status == 'ready'">
+                                        <field name="product_id"/>
+                                        <field name="vendor_id"/>
+                                        <field name="open_demand_qty"/>
+                                        <field name="min_stock_demand_qty"/>
+                                        <field name="total_demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="existing_open_rfq_qty"/>
+                                        <field name="suggested_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="status" widget="badge"/>
+                                        <field name="message"/>
+                                    </tree>
+                                </field>
                             </details>
                         </page>
                         <page string="Workflow overview">
@@ -812,6 +838,26 @@
                 </group>
                 <footer>
                     <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_planning_batch_procurement_scope_wizard_form" model="ir.ui.view">
+        <field name="name">planning.batch.procurement.scope.wizard.form</field>
+        <field name="model">planning.batch.procurement.scope.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Analyze Procurement Scope">
+                <group>
+                    <field name="batch_id" readonly="1"/>
+                </group>
+                <group>
+                    <field name="include_open_demands"/>
+                    <field name="include_min_stock"/>
+                </group>
+                <footer>
+                    <button name="action_analyze" type="object" string="Analyze" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>

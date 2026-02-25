@@ -1,5 +1,5 @@
-Current status (v0.6.10) – Multi-level BOM structure analysis
-Release date: 2026-02-24
+Current status (v0.7.01) – Procurement planner MVP (global scope)
+Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
 - Shortage analysis (v0.4.01+):
@@ -78,6 +78,17 @@ Implemented in Odoo 17 Community:
   - v0.6.10 UX polish:
     - first section in each planner tab is open by default
     - remaining sections stay collapsed by default
+- v0.7.01 additions:
+  - Procurement analysis scope selector with toggles:
+    - Open Demands
+    - Minimum Stock Quantities
+  - Global demand analysis (company scope) from open MO component demands
+  - Draft/sent/open purchase quantities are netted in analysis to avoid duplicate planning
+  - New procurement analysis result model:
+    - `planning.batch.procurement.line`
+  - RFQ creation from procurement suggestions:
+    - enforces one draft RFQ per vendor per company
+    - groups lines by vendor and links created RFQs/PO lines to batch
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
