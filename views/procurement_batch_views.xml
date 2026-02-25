@@ -83,8 +83,8 @@
                     </group>
 
                     <separator string="Analysis" class="mt16"/>
-                    <group col="1" class="fp_procurement_section">
-                        <field name="line_ids" nolabel="1" readonly="1" colspan="2">
+                    <div class="fp_procurement_block fp_procurement_section">
+                        <field name="line_ids" nolabel="1" readonly="1">
                             <tree string="Procurement Analysis" create="0" edit="0" delete="0">
                                 <field name="product_id"/>
                                 <field name="vendor_id"/>
@@ -100,20 +100,22 @@
                                 <field name="message"/>
                             </tree>
                         </field>
-                    </group>
+                    </div>
 
                     <separator string="RFQs" class="mt16"/>
-                    <group col="1" class="fp_procurement_section">
-                        <field name="rfq_ids" nolabel="1" readonly="1" colspan="2">
+                    <div class="fp_procurement_block fp_procurement_section">
+                        <field name="rfq_ids" nolabel="1" readonly="1">
                             <tree string="Prepared RFQs" create="0" edit="0" delete="0">
                                 <field name="name"/>
                                 <field name="partner_id"/>
+                                <field name="origin"/>
                                 <field name="state"/>
                                 <field name="date_order"/>
+                                <field name="create_date"/>
                                 <field name="amount_total"/>
                             </tree>
                         </field>
-                    </group>
+                    </div>
                 </sheet>
             </form>
         </field>

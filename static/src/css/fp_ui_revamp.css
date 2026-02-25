@@ -173,6 +173,24 @@
 
 .fp_procurement_form .fp_procurement_section .o_list_table {
     table-layout: auto;
+    min-width: 0;
+}
+
+.fp_procurement_form .fp_procurement_section .o_list_renderer {
+    overflow-x: auto;
+}
+
+.fp_procurement_form .fp_procurement_section .o_list_renderer thead th,
+.fp_procurement_form .fp_procurement_section .o_list_renderer tbody td {
+    white-space: normal;
+    word-break: break-word;
+}
+
+.fp_procurement_form .fp_procurement_block {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
 }
 
 .fp_select_so .fp_select_section {

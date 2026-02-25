@@ -1,4 +1,4 @@
-Current status (v0.7.05) – Procurement planner separated
+Current status (v0.7.06) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -121,6 +121,10 @@ Implemented in Odoo 17 Community:
   - Analysis and RFQ tables are rendered full width
   - Added one-draft-per-company validation for `procurement.batch`
   - Procurement Planning list hides `New` when a draft procurement batch already exists in current company
+- v0.7.06 UI polish:
+  - fixed Procurement Planning Analysis/RFQ table overlap with responsive container behavior
+  - added bordered section containers for Analysis and RFQs
+  - RFQ table extended with extra columns (`Origin`, `Created On`) for easier review
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
