@@ -1,4 +1,4 @@
-Current status (v0.6.07) – Multi-level BOM structure analysis
+Current status (v0.6.08) – Multi-level BOM structure analysis
 Release date: 2026-02-24
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -67,6 +67,9 @@ Implemented in Odoo 17 Community:
   - v0.6.07 polish:
     - batch auto-moves from `confirmed` to `done` when all linked MOs are in `done/cancel` (checked on `Check Manufacturing Orders`)
     - Selection / Shortage / Explosion / Manufacture / Procurement tabs use collapsible section blocks (collapsed by default)
+  - v0.6.08 UI cleanup:
+    - removed colored header badges in collapsible section titles
+    - kept plain text section headers with collapsed behavior
   - Shortage analysis now uses exploded multi-level demand
     - source_type `mo` for manufacturable demand
     - source_type `po` for procurement input demand
