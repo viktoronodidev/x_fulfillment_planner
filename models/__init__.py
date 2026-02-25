@@ -15,4 +15,6 @@ from . import planning_batch_procurement_line
 from . import planning_batch_procurement_scope_wizard
 from . import procurement_batch
 from . import procurement_batch_line
+from . import procurement_batch_vendor_confirm_wizard
+from . import procurement_batch_vendor_confirm_wizard_line
 from . import sale_order

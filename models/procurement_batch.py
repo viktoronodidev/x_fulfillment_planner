@@ -30,6 +30,7 @@ class ProcurementBatch(models.Model):
         [
             ('draft', 'Draft'),
             ('analyzed', 'Analyzed'),
+            ('vendors_confirmed', 'Vendors Confirmed'),
             ('rfq_created', 'RFQ Created'),
             ('done', 'Done'),
         ],
@@ -76,6 +77,7 @@ class ProcurementBatch(models.Model):
     product_count = fields.Integer(string='Products', compute='_compute_kpis', readonly=True)
     ready_count = fields.Integer(string='Ready Lines', compute='_compute_kpis', readonly=True)
     missing_vendor_count = fields.Integer(string='Missing Vendor', compute='_compute_kpis', readonly=True)
+    multi_vendor_line_count = fields.Integer(string='Multi-vendor Lines', compute='_compute_kpis', readonly=True)
     suggested_qty_total = fields.Float(string='Suggested Qty', compute='_compute_kpis', readonly=True)
     rfq_count = fields.Integer(string='RFQs', compute='_compute_kpis', readonly=True)
 
@@ -111,8 +113,36 @@ class ProcurementBatch(models.Model):
             batch.product_count = len(lines)
             batch.ready_count = len(lines.filtered(lambda l: l.status == 'ready' and l.suggested_qty > 0))
             batch.missing_vendor_count = len(lines.filtered(lambda l: l.status == 'missing_vendor'))
+            batch.multi_vendor_line_count = len(lines.filtered(lambda l: l.suggested_qty > 0 and l.has_multi_vendor))
             batch.suggested_qty_total = sum(lines.mapped('suggested_qty'))
             batch.rfq_count = len(batch.rfq_ids)
+
+    def action_open_vendor_confirmation(self):
+        self.ensure_one()
+        lines = self.line_ids.filtered(lambda l: l.suggested_qty > 0 and l.has_multi_vendor)
+        if not lines:
+            self.status = 'vendors_confirmed'
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('No vendor selection required'),
+                    'message': _('All lines have single vendor options. Vendors were auto-confirmed.'),
+                    'type': 'success',
+                    'sticky': False,
+                    'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+                }
+            }
+        wizard = self.env['procurement.batch.vendor.confirm.wizard'].create({'batch_id': self.id})
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Confirm Vendors'),
+            'res_model': 'procurement.batch.vendor.confirm.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'res_id': wizard.id,
+            'context': {'default_batch_id': self.id},
+        }
 
     @api.constrains('status', 'company_id')
     def _check_single_draft_per_company(self):
@@ -270,7 +300,8 @@ class ProcurementBatch(models.Model):
         if create_vals:
             self.env['procurement.batch.line'].create(create_vals)
 
-        self.status = 'analyzed'
+        has_multi_vendor = bool(self.line_ids.filtered(lambda l: l.suggested_qty > 0 and l.has_multi_vendor))
+        self.status = 'analyzed' if has_multi_vendor else 'vendors_confirmed'
         self.analysis_run_at = fields.Datetime.now()
         self.analysis_run_by = self.env.user
 
@@ -279,7 +310,11 @@ class ProcurementBatch(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('Procurement analysis completed'),
-                'message': _('Procurement suggestions are ready for review.'),
+                'message': _(
+                    'Procurement suggestions are ready for review. Confirm vendors before RFQ creation.'
+                    if has_multi_vendor else
+                    'Procurement suggestions are ready and vendors are auto-confirmed.'
+                ),
                 'type': 'success',
                 'sticky': False,
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
@@ -310,6 +345,8 @@ class ProcurementBatch(models.Model):
 
     def action_create_rfqs(self):
         self.ensure_one()
+        if self.status != 'vendors_confirmed':
+            raise UserError(_('Please confirm vendors before creating RFQs.'))
         lines = self.line_ids.filtered(lambda l: l.suggested_qty > 0)
         if not lines:
             raise UserError(_('No procurement suggestions with quantity to buy.'))

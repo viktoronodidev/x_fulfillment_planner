@@ -1,4 +1,4 @@
-Current status (v0.7.07) – Procurement planner separated
+Current status (v0.7.08) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -129,6 +129,17 @@ Implemented in Odoo 17 Community:
   - RFQ line `price_unit` now comes from supplier price (`product.supplierinfo`) when vendor is configured on the product
   - fallback remains product `standard_price` if no supplier price is found
   - RFQ currency is set from supplier currency (fallback: vendor purchase currency / company currency)
+- v0.7.08 vendor confirmation gate:
+  - new procurement status inserted:
+    - `vendors_confirmed` (between `analyzed` and `rfq_created`)
+  - if analyzed lines include multi-vendor products, user must run `Confirm Vendors` before RFQ creation
+  - vendor confirmation wizard lists only multi-vendor analyzed lines
+  - each line must be checked (`confirmed`) and vendor selected
+  - real-time comparison shown per line:
+    - selected price / selected lead time
+    - best price / fastest lead time
+  - if no multi-vendor lines exist, analysis auto-moves batch directly to `vendors_confirmed`
+  - `Create RFQs` is blocked until vendor confirmation is completed
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

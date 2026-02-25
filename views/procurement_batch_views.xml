@@ -25,17 +25,20 @@
                 <header>
                     <button name="action_analyze" type="object" string="Analyze Procurement"
                             class="btn-primary"
-                            invisible="status not in ['draft', 'analyzed']"/>
-                    <button name="action_create_rfqs" type="object" string="Create RFQs"
+                            invisible="status != 'draft'"/>
+                    <button name="action_open_vendor_confirmation" type="object" string="Confirm Vendors"
                             class="btn-secondary"
                             invisible="status != 'analyzed'"/>
+                    <button name="action_create_rfqs" type="object" string="Create RFQs"
+                            class="btn-secondary"
+                            invisible="status != 'vendors_confirmed'"/>
                     <button name="action_set_done" type="object" string="Mark Done"
                             class="btn-secondary"
                             invisible="status not in ['rfq_created']"/>
                     <button name="action_set_draft" type="object" string="Revert to Draft"
                             class="btn-secondary"
-                            invisible="status not in ['analyzed', 'rfq_created', 'done']"/>
-                    <field name="status" widget="statusbar" statusbar_visible="draft,analyzed,rfq_created,done"/>
+                            invisible="status not in ['analyzed', 'vendors_confirmed', 'rfq_created', 'done']"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,analyzed,vendors_confirmed,rfq_created,done"/>
                 </header>
                 <sheet class="fp_sheet fp_sheet--full">
                     <group col="2">
@@ -52,7 +55,7 @@
                         </group>
                     </group>
 
-                    <group col="5" class="mt16">
+                    <group col="6" class="mt16">
                         <group>
                             <label for="product_count" class="o_form_label"/>
                             <div><field name="product_count" readonly="1"/></div>
@@ -64,6 +67,10 @@
                         <group>
                             <label for="missing_vendor_count" class="o_form_label"/>
                             <div><field name="missing_vendor_count" readonly="1"/></div>
+                        </group>
+                        <group>
+                            <label for="multi_vendor_line_count" class="o_form_label"/>
+                            <div><field name="multi_vendor_line_count" readonly="1"/></div>
                         </group>
                         <group>
                             <label for="suggested_qty_total" class="o_form_label"/>
@@ -125,6 +132,37 @@
         <field name="name">Procurement Planning</field>
         <field name="res_model">procurement.batch</field>
         <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_procurement_batch_vendor_confirm_wizard_form" model="ir.ui.view">
+        <field name="name">procurement.batch.vendor.confirm.wizard.form</field>
+        <field name="model">procurement.batch.vendor.confirm.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirm Preferred Vendors">
+                <group>
+                    <field name="batch_id" readonly="1"/>
+                    <field name="all_confirmed" readonly="1"/>
+                </group>
+                <field name="line_ids" nolabel="1">
+                    <tree create="0" delete="0" edit="1">
+                        <field name="confirmed"/>
+                        <field name="product_id" readonly="1"/>
+                        <field name="suggested_qty" readonly="1"/>
+                        <field name="uom_id" readonly="1"/>
+                        <field name="supplier_partner_ids" column_invisible="1"/>
+                        <field name="vendor_id"/>
+                        <field name="selected_price" readonly="1"/>
+                        <field name="selected_delay" readonly="1"/>
+                        <field name="best_price" readonly="1"/>
+                        <field name="fastest_delay" readonly="1"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button name="action_confirm_vendors" type="object" string="Confirm Vendors" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
     </record>
 
     <menuitem id="menu_procurement_batch"

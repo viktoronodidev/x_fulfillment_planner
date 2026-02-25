@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ProcurementBatchLine(models.Model):
@@ -34,6 +34,16 @@ class ProcurementBatchLine(models.Model):
         comodel_name='res.partner',
         string='Vendor',
     )
+    vendor_option_count = fields.Integer(
+        string='Vendor Options',
+        compute='_compute_vendor_metrics',
+        readonly=True,
+    )
+    has_multi_vendor = fields.Boolean(
+        string='Multiple Vendors',
+        compute='_compute_vendor_metrics',
+        readonly=True,
+    )
     open_demand_qty = fields.Float(string='Open Demand Qty')
     min_stock_target_qty = fields.Float(string='Min Stock Target Qty')
     total_target_qty = fields.Float(string='Total Target Qty')
@@ -52,3 +62,17 @@ class ProcurementBatchLine(models.Model):
         required=True,
     )
     message = fields.Char(string='Message')
+
+    def _get_company_sellers(self):
+        self.ensure_one()
+        return self.product_id.seller_ids.filtered(
+            lambda s: not s.company_id or s.company_id == self.batch_id.company_id
+        )
+
+    @api.depends('product_id', 'product_id.seller_ids', 'batch_id.company_id')
+    def _compute_vendor_metrics(self):
+        for line in self:
+            vendors = line._get_company_sellers().mapped('partner_id')
+            unique_vendor_ids = set(vendors.ids)
+            line.vendor_option_count = len(unique_vendor_ids)
+            line.has_multi_vendor = len(unique_vendor_ids) > 1
