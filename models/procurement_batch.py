@@ -109,7 +109,7 @@ class ProcurementBatch(models.Model):
         ]
         for move in self.env['stock.move'].search(move_domain):
             product = move.product_id
-            if not product or product.type == 'service':
+            if not product or product.type == 'service' or not product.purchase_ok:
                 continue
             done_qty = getattr(move, 'quantity', getattr(move, 'quantity_done', 0.0))
             remaining = max(move.product_uom_qty - done_qty, 0.0)
@@ -160,13 +160,13 @@ class ProcurementBatch(models.Model):
         open_demand_by_product = defaultdict(float)
         if self.include_open_demands:
             open_demand_by_product = self._get_global_open_procurement_demand()
-            products |= self.env['product.product'].browse(list(open_demand_by_product.keys()))
+            products |= self.env['product.product'].browse(list(open_demand_by_product.keys())).filtered('purchase_ok')
 
         min_target_by_product = defaultdict(float)
         if self.include_min_stock:
             orderpoint_products = self.env['stock.warehouse.orderpoint'].search([
                 ('company_id', '=', self.company_id.id),
-            ]).mapped('product_id')
+            ]).mapped('product_id').filtered('purchase_ok')
             products |= orderpoint_products
             min_target_by_product = self._get_min_stock_targets(products)
 
@@ -192,7 +192,7 @@ class ProcurementBatch(models.Model):
 
         create_vals = []
         for product in products.sorted('display_name'):
-            if product.type == 'service':
+            if product.type == 'service' or not product.purchase_ok:
                 continue
 
             open_demand = open_demand_by_product.get(product.id, 0.0) if self.include_open_demands else 0.0

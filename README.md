@@ -1,4 +1,4 @@
-Current status (v0.7.03) – Procurement planner separated
+Current status (v0.7.04) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -111,6 +111,8 @@ Implemented in Odoo 17 Community:
 - v0.7.03 fix:
   - fixed procurement/open-demand calculation compatibility on Odoo 17 stock moves
   - replaced unsupported `stock.move.quantity_done` usage with Odoo 17-compatible done quantity handling
+- v0.7.04 fix:
+  - procurement analysis now only includes products where `Can be Purchased = true`
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open
