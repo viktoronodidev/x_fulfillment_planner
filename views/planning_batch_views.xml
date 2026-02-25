@@ -31,6 +31,8 @@
                             class="btn-primary" invisible="status != 'calculated'"/>
                     <button name="action_check_manufacturing_orders" type="object" string="Check Manufacturing Orders"
                             class="btn-secondary" invisible="status not in ['calculated', 'confirmed', 'done']"/>
+                    <button name="action_open_manufacturing_chain" type="object" string="Open Manufacturing Chain"
+                            class="btn-secondary" invisible="status == 'draft'"/>
                 </header>
                 <sheet class="fp_sheet fp_sheet--full">
                     <group>
@@ -121,6 +123,18 @@
                                         <div class="fp_kpi_label">Last Analyzed</div>
                                         <div class="fp_kpi_value">
                                             <field name="shortage_last_run" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">MOs Created At</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="suggested_mo_created_at" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="fp_kpi_card">
+                                        <div class="fp_kpi_label">MOs Created By</div>
+                                        <div class="fp_kpi_value">
+                                            <field name="suggested_mo_created_by" nolabel="1"/>
                                         </div>
                                     </div>
                                 </div>
@@ -319,15 +333,6 @@
                                 <field name="has_shortage_level3"/>
                                 <field name="has_shortage_level4"/>
                             </group>
-                            <details class="fp_section">
-                                <summary class="fp_section_summary">
-                                    Analysis Info
-                                </summary>
-                                <div class="fp_block_meta">
-                                    <field name="shortage_last_run" readonly="1"/>
-                                    <field name="shortage_last_run_by" readonly="1"/>
-                                </div>
-                            </details>
                             <details class="fp_section" modifiers="{'invisible': [('has_shortage_level0', '=', False)]}">
                                 <summary class="fp_section_summary">
                                     Level0
@@ -415,13 +420,6 @@
                             </details>
                         </page>
                         <page string="Explosion">
-                            <details class="fp_section">
-                                <summary class="fp_section_summary">
-                                    Actions
-                                </summary>
-                                <button name="action_open_manufacturing_chain" type="object" string="Open Manufacturing Chain"
-                                        class="btn-secondary"/>
-                            </details>
                             <group invisible="1">
                                 <field name="has_explosion_level0"/>
                                 <field name="has_explosion_level1"/>
@@ -429,17 +427,25 @@
                                 <field name="has_explosion_level3"/>
                                 <field name="has_explosion_level4"/>
                             </group>
-                            <details class="fp_section">
+                            <details class="fp_section fp_explosion_summary_group">
                                 <summary class="fp_section_summary">
-                                    Structure Info
+                                    Demand Summary
                                 </summary>
-                                <div class="fp_block_meta">
-                                    <field name="explosion_last_run" readonly="1"/>
-                                    <field name="explosion_last_run_by" readonly="1"/>
-                                    <field name="semi_product_count" readonly="1"/>
-                                    <field name="raw_product_count" readonly="1"/>
-                                    <field name="explosion_issue_count" readonly="1"/>
-                                </div>
+                                <field name="demand_summary_ids">
+                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
+                                          decoration-danger="uncovered_qty &gt; 0">
+                                        <field name="product_id"/>
+                                        <field name="manufacture_demand_qty"/>
+                                        <field name="procurement_demand_qty"/>
+                                        <field name="total_demand_qty"/>
+                                        <field name="available_qty"/>
+                                        <field name="uncovered_qty"/>
+                                        <field name="uom_id"/>
+                                        <field name="level_min"/>
+                                        <field name="level_max"/>
+                                        <field name="has_bom"/>
+                                    </tree>
+                                </field>
                             </details>
                             <details class="fp_section fp_explosion_nodes_group" modifiers="{'invisible': [('has_explosion_level0', '=', False)]}">
                                 <summary class="fp_section_summary">
@@ -547,37 +553,8 @@
                                     </tree>
                                 </field>
                             </details>
-                            <details class="fp_section fp_explosion_summary_group">
-                                <summary class="fp_section_summary">
-                                    Demand Summary
-                                </summary>
-                                <field name="demand_summary_ids">
-                                    <tree create="0" edit="0" delete="0" import="0" export_xlsx="0"
-                                          decoration-danger="uncovered_qty &gt; 0">
-                                        <field name="product_id"/>
-                                        <field name="manufacture_demand_qty"/>
-                                        <field name="procurement_demand_qty"/>
-                                        <field name="total_demand_qty"/>
-                                        <field name="available_qty"/>
-                                        <field name="uncovered_qty"/>
-                                        <field name="uom_id"/>
-                                        <field name="level_min"/>
-                                        <field name="level_max"/>
-                                        <field name="has_bom"/>
-                                    </tree>
-                                </field>
-                            </details>
                         </page>
                         <page string="Manufacture">
-                            <details class="fp_section">
-                                <summary class="fp_section_summary">
-                                    MO Meta
-                                </summary>
-                                <div class="fp_block_meta">
-                                    <field name="suggested_mo_created_at" readonly="1"/>
-                                    <field name="suggested_mo_created_by" readonly="1"/>
-                                </div>
-                            </details>
                             <details class="fp_section">
                                 <summary class="fp_section_summary">
                                     Manufacturing Orders
@@ -589,20 +566,6 @@
                                         <field name="product_qty"/>
                                         <field name="origin" string="Origin"/>
                                         <field name="date_start"/>
-                                        <field name="state"/>
-                                    </tree>
-                                </field>
-                            </details>
-                            <details class="fp_section">
-                                <summary class="fp_section_summary">
-                                    MO Lines
-                                </summary>
-                                <field name="mo_line_ids" readonly="1">
-                                    <tree create="0" edit="0" delete="0">
-                                        <field name="raw_material_production_id"/>
-                                        <field name="product_id"/>
-                                        <field name="product_uom_qty"/>
-                                        <field name="product_uom"/>
                                         <field name="state"/>
                                     </tree>
                                 </field>
