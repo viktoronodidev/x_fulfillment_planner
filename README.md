@@ -1,4 +1,4 @@
-Current status (v0.7.08) – Procurement planner separated
+Current status (v0.7.09) – Procurement planner separated
 Release date: 2026-02-25
 Previous: v0.3.03 finalized
 Implemented in Odoo 17 Community:
@@ -140,6 +140,8 @@ Implemented in Odoo 17 Community:
     - best price / fastest lead time
   - if no multi-vendor lines exist, analysis auto-moves batch directly to `vendors_confirmed`
   - `Create RFQs` is blocked until vendor confirmation is completed
+- v0.7.09 fix:
+  - fixed empty Confirm Vendors popup by creating wizard lines directly from matching analyzed multi-vendor lines
 - Selected Products aggregated list + “Need BoM correction” list
 - Select Sales Orders wizard (modal):
   - auto-loads open SOs (state = sale) on open

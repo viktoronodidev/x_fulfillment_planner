@@ -133,7 +133,17 @@ class ProcurementBatch(models.Model):
                     'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
                 }
             }
-        wizard = self.env['procurement.batch.vendor.confirm.wizard'].create({'batch_id': self.id})
+        wizard_line_vals = []
+        for line in lines:
+            wizard_line_vals.append((0, 0, {
+                'batch_line_id': line.id,
+                'vendor_id': line.vendor_id.id,
+            }))
+
+        wizard = self.env['procurement.batch.vendor.confirm.wizard'].create({
+            'batch_id': self.id,
+            'line_ids': wizard_line_vals,
+        })
         return {
             'type': 'ir.actions.act_window',
             'name': _('Confirm Vendors'),
@@ -141,7 +151,6 @@ class ProcurementBatch(models.Model):
             'view_mode': 'form',
             'target': 'new',
             'res_id': wizard.id,
-            'context': {'default_batch_id': self.id},
         }
 
     @api.constrains('status', 'company_id')
