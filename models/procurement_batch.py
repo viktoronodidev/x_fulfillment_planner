@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from lxml import etree
 
 
 class ProcurementBatch(models.Model):
@@ -78,6 +79,20 @@ class ProcurementBatch(models.Model):
     suggested_qty_total = fields.Float(string='Suggested Qty', compute='_compute_kpis', readonly=True)
     rfq_count = fields.Integer(string='RFQs', compute='_compute_kpis', readonly=True)
 
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        result = super().fields_view_get(view_id=view_id, view_type=view_type, toolbar=toolbar, submenu=submenu)
+        if view_type == 'tree':
+            has_draft = self.search_count([
+                ('status', '=', 'draft'),
+                ('company_id', '=', self.env.company.id),
+            ])
+            if has_draft:
+                doc = etree.XML(result['arch'])
+                doc.set('create', 'false')
+                result['arch'] = etree.tostring(doc, encoding='unicode')
+        return result
+
     @api.depends('show_all_open_rfqs', 'created_rfq_ids', 'company_id')
     def _compute_rfq_ids(self):
         for batch in self:
@@ -98,6 +113,18 @@ class ProcurementBatch(models.Model):
             batch.missing_vendor_count = len(lines.filtered(lambda l: l.status == 'missing_vendor'))
             batch.suggested_qty_total = sum(lines.mapped('suggested_qty'))
             batch.rfq_count = len(batch.rfq_ids)
+
+    @api.constrains('status', 'company_id')
+    def _check_single_draft_per_company(self):
+        for batch in self:
+            if batch.status != 'draft':
+                continue
+            if self.search_count([
+                ('id', '!=', batch.id),
+                ('status', '=', 'draft'),
+                ('company_id', '=', batch.company_id.id),
+            ]):
+                raise UserError(_('Only one Draft Procurement Planning batch is allowed per company.'))
 
     def _get_global_open_procurement_demand(self):
         self.ensure_one()

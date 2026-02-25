@@ -157,6 +157,24 @@
     max-width: none;
 }
 
+.fp_procurement_form .o_form_sheet_bg,
+.fp_procurement_form .o_content,
+.fp_procurement_form .o_form_sheet_container {
+    max-width: none;
+    width: 100%;
+}
+
+.fp_procurement_form .fp_procurement_section .o_field_widget,
+.fp_procurement_form .fp_procurement_section .o_list_view,
+.fp_procurement_form .fp_procurement_section .o_list_renderer,
+.fp_procurement_form .fp_procurement_section .o_list_table {
+    width: 100%;
+}
+
+.fp_procurement_form .fp_procurement_section .o_list_table {
+    table-layout: auto;
+}
+
 .fp_select_so .fp_select_section {
     border: 1px solid #e5e7eb;
     border-radius: 12px;

@@ -21,7 +21,7 @@
         <field name="name">procurement.batch.form</field>
         <field name="model">procurement.batch</field>
         <field name="arch" type="xml">
-            <form string="Procurement Planning">
+            <form string="Procurement Planning" class="fp_form fp_procurement_form">
                 <header>
                     <button name="action_analyze" type="object" string="Analyze Procurement"
                             class="btn-primary"
@@ -37,21 +37,19 @@
                             invisible="status not in ['analyzed', 'rfq_created', 'done']"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,analyzed,rfq_created,done"/>
                 </header>
-                <sheet>
-                    <group>
+                <sheet class="fp_sheet fp_sheet--full">
+                    <group col="2">
                         <group>
                             <field name="name" readonly="1"/>
                             <field name="date"/>
                             <field name="company_id" readonly="1"/>
+                            <field name="note"/>
                         </group>
                         <group>
                             <field name="include_open_demands"/>
                             <field name="include_min_stock"/>
                             <field name="show_all_open_rfqs"/>
                         </group>
-                    </group>
-                    <group>
-                        <field name="note"/>
                     </group>
 
                     <group col="5" class="mt16">
@@ -84,8 +82,9 @@
                         </group>
                     </group>
 
-                    <group class="mt16">
-                        <field name="line_ids" nolabel="1" readonly="1">
+                    <separator string="Analysis" class="mt16"/>
+                    <group col="1" class="fp_procurement_section">
+                        <field name="line_ids" nolabel="1" readonly="1" colspan="2">
                             <tree string="Procurement Analysis" create="0" edit="0" delete="0">
                                 <field name="product_id"/>
                                 <field name="vendor_id"/>
@@ -103,8 +102,9 @@
                         </field>
                     </group>
 
-                    <group class="mt16">
-                        <field name="rfq_ids" nolabel="1" readonly="1">
+                    <separator string="RFQs" class="mt16"/>
+                    <group col="1" class="fp_procurement_section">
+                        <field name="rfq_ids" nolabel="1" readonly="1" colspan="2">
                             <tree string="Prepared RFQs" create="0" edit="0" delete="0">
                                 <field name="name"/>
                                 <field name="partner_id"/>
